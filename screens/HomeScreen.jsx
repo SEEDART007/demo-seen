@@ -56,6 +56,16 @@ export default function HomeScreen({ navigation }) {
         >
           <Text style={styles.buttonText}>📝 Log an Incident</Text>
         </TouchableOpacity>
+           <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('VoiceTrigger')}
+      >
+        <Text style={styles.buttonText}>🎙️ Set Panic Voice Trigger</Text>
+      </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('PoliceStations')}>
+  <Text>Find Nearby Police Stations</Text>
+</TouchableOpacity>
+
       </ScrollView>
     </SafeAreaView>
   );

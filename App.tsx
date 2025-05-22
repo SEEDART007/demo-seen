@@ -1,6 +1,9 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import PoliceStationsScreen from './screens/PoliceStationScreen';
+import VoiceTriggerSetupScreen from './screens/VoiceTriggerSetupScreen';
+
 
 import HomeScreen from './screens/HomeScreen'; // make sure this path is correct
 import EmergencyScreen from './screens/EmergencyScreen'; // dummy placeholders
@@ -24,6 +27,8 @@ export default function App() {
         <Stack.Screen name="Resources" component={ResourcesScreen} />
         <Stack.Screen name="SafetyPlan" component={SafetyPlanScreen} />
         <Stack.Screen name="LogIncident" component={LogIncidentScreen} />
+        <Stack.Screen name="PoliceStations" component={PoliceStationsScreen} />
+        <Stack.Screen name="VoiceTrigger" component={VoiceTriggerSetupScreen} />
         <Stack.Screen name="Exit" component={ExitScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
