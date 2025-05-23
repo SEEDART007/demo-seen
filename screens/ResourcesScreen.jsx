@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,72 +7,43 @@ import {
   TouchableOpacity,
   Modal,
   Alert,
+  Share,
+  Clipboard,
+  Animated,
 } from 'react-native';
 
 const COHERE_API_KEY = '6xr5q0MxmzkQMq8tswl7KCuR5PWj9LpFXYk8eEWm';
 
 const indianDVLaws = [
-  {
-    id: 1,
-    title: 'Protection of Women from DV Act, 2005',
-    description:
-      'A comprehensive law that aims to protect women from domestic violence including physical, sexual, emotional, verbal, and economic abuse.',
-  },
-  {
-    id: 2,
-    title: 'Section 498A IPC',
-    description:
-      'Punishes a husband or his relatives for subjecting a woman to cruelty, including physical harm and harassment over dowry.',
-  },
-  {
-    id: 3,
-    title: 'Section 304B IPC',
-    description:
-      'Applies when a woman dies due to burns, injuries, or under suspicious circumstances within 7 years of marriage and dowry harassment is suspected.',
-  },
-  {
-    id: 4,
-    title: 'Dowry Prohibition Act, 1961',
-    description:
-      'Makes giving, taking, or demanding dowry a criminal offense. It seeks to eliminate the social evil of dowry and related violence.',
-  },
-  {
-    id: 5,
-    title: 'Section 125 CrPC',
-    description:
-      'Provides the right to claim maintenance for a wife (including divorced), children, or parents who are unable to maintain themselves.',
-  },
-  {
-    id: 6,
-    title: 'Hindu Marriage Act, 1955',
-    description:
-      'Allows for judicial separation and divorce on grounds including cruelty, desertion, and adultery in Hindu marriages.',
-  },
-  {
-    id: 7,
-    title: 'Section 23 DV Act',
-    description:
-      'Empowers the court to pass interim and ex parte orders for the immediate protection of women from domestic violence.',
-  },
-  {
-    id: 8,
-    title: 'Section 18 DV Act',
-    description:
-      'Provides for protection orders to prevent the respondent from committing any act of domestic violence or aiding in its commission.',
-  },
-  {
-    id: 9,
-    title: 'Section 19 DV Act',
-    description:
-      'Enables women to remain in their shared household and bars the abuser from dispossessing or disturbing them from their residence.',
-  },
+  { id: 1, title: 'Protection of Women from DV Act, 2005', description: 'Protects women from all forms of domestic violence.' },
+  { id: 2, title: 'Section 498A IPC', description: 'Punishes cruelty by husband or relatives towards a woman.' },
+  { id: 3, title: 'Section 304B IPC', description: 'Deals with dowry deaths within 7 years of marriage.' },
+  { id: 4, title: 'Dowry Prohibition Act, 1961', description: 'Prohibits the giving or receiving of dowry.' },
+  { id: 5, title: 'Section 125 CrPC', description: 'Allows maintenance claims for wives, children, and parents.' },
+  { id: 6, title: 'Hindu Marriage Act, 1955', description: 'Provides legal rights for marriage and divorce among Hindus.' },
+  { id: 7, title: 'Section 23 DV Act', description: 'Allows courts to issue immediate protection orders.' },
+  { id: 8, title: 'Section 18 DV Act', description: 'Empowers women with protection orders from abuse.' },
+  { id: 9, title: 'Section 19 DV Act', description: 'Allows women to stay in the shared household safely.' },
 ];
 
-export default function IndianLawsScreen({ navigation }) {
+export default function IndianLawsScreen() {
   const [selectedLaw, setSelectedLaw] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [aiExplanation, setAiExplanation] = useState('');
   const [loading, setLoading] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (modalVisible) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      fadeAnim.setValue(0);
+    }
+  }, [modalVisible]);
 
   const fetchAIExplanation = async (lawTitle) => {
     try {
@@ -80,7 +51,7 @@ export default function IndianLawsScreen({ navigation }) {
       const response = await fetch('https://api.cohere.ai/v1/chat', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${COHERE_API_KEY}`,
+          Authorization: `Bearer ${COHERE_API_KEY}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -104,6 +75,25 @@ export default function IndianLawsScreen({ navigation }) {
     }
   };
 
+  const handleCopy = () => {
+    Clipboard.setString(aiExplanation || selectedLaw.description);
+    Alert.alert('Copied', 'Text copied to clipboard.');
+  };
+
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: aiExplanation || selectedLaw.description,
+      });
+    } catch (error) {
+      Alert.alert('Error', 'Could not share the content.');
+    }
+  };
+
+  const handleSave = () => {
+    Alert.alert('Save', 'Save functionality can be integrated with local storage or file system.');
+  };
+
   const openModal = (law) => {
     setSelectedLaw(law);
     setAiExplanation('');
@@ -124,37 +114,35 @@ export default function IndianLawsScreen({ navigation }) {
         ))}
       </ScrollView>
 
-      <Modal
-        visible={modalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setModalVisible(false)}
-      >
+      <Modal visible={modalVisible} transparent onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <Animated.View style={[styles.modalContent, { opacity: fadeAnim }]}>
             <Text style={styles.modalTitle}>{selectedLaw?.title}</Text>
-            <ScrollView style={styles.scrollableExplanation} showsVerticalScrollIndicator={true}>
+            <ScrollView style={styles.textScroll} contentContainerStyle={{ paddingBottom: 20 }}>
               <Text style={styles.modalText}>
-                {loading
-                  ? 'Fetching AI explanation...'
-                  : aiExplanation || selectedLaw?.description}
+                {loading ? 'Fetching AI explanation...' : aiExplanation || selectedLaw?.description}
               </Text>
             </ScrollView>
             <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={styles.aiButton}
-                onPress={() => fetchAIExplanation(selectedLaw.title)}
-              >
+              <TouchableOpacity style={styles.aiButton} onPress={() => fetchAIExplanation(selectedLaw.title)}>
                 <Text style={styles.buttonText}>Explain with AI</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => setModalVisible(false)}
-              >
+              <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
                 <Text style={styles.buttonText}>Close</Text>
               </TouchableOpacity>
             </View>
-          </View>
+            <View style={styles.utilButtons}>
+              <TouchableOpacity style={styles.utilButton} onPress={handleCopy}>
+                <Text style={styles.utilButtonText}>📋 Copy</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.utilButton} onPress={handleShare}>
+                <Text style={styles.utilButtonText}>🔗 Share</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.utilButton} onPress={handleSave}>
+                <Text style={styles.utilButtonText}>💾 Save</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
         </View>
       </Modal>
     </View>
@@ -162,12 +150,7 @@ export default function IndianLawsScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F2F4F7',
-    paddingTop: 50,
-    paddingHorizontal: 20,
-  },
+  container: { flex: 1, backgroundColor: '#F2F4F7', paddingTop: 50, paddingHorizontal: 20 },
   title: {
     fontSize: 26,
     fontWeight: 'bold',
@@ -176,9 +159,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     letterSpacing: 0.5,
   },
-  scrollContent: {
-    paddingBottom: 120,
-  },
+  scrollContent: { paddingBottom: 120 },
   lawCard: {
     backgroundColor: '#FFFFFF',
     padding: 20,
@@ -187,10 +168,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
     elevation: 4,
   },
   lawTitle: {
@@ -209,48 +186,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  infoButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
+  infoButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    backgroundColor: 'rgba(0,0,0,0.45)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
     width: '92%',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#fff',
     borderRadius: 20,
     padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 6,
+    maxHeight: '85%',
   },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#4B49AC',
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  scrollableExplanation: {
-    maxHeight: 250,
-    marginBottom: 24,
-  },
-  modalText: {
-    fontSize: 15.5,
-    color: '#3A3A3C',
-    lineHeight: 24,
-    textAlign: 'justify',
-  },
+  textScroll: { maxHeight: 300 },
+  modalTitle: { fontSize: 20, fontWeight: '700', color: '#4B49AC', textAlign: 'center', marginBottom: 12 },
+  modalText: { fontSize: 15.5, color: '#3A3A3C', lineHeight: 24, textAlign: 'justify' },
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginTop: 24,
   },
   aiButton: {
     backgroundColor: '#4B49AC',
@@ -267,10 +223,21 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     flex: 1,
   },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '600',
-    textAlign: 'center',
+  buttonText: { color: '#fff', fontSize: 15, fontWeight: '600', textAlign: 'center' },
+  utilButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 18,
+  },
+  utilButton: {
+    backgroundColor: '#E5E7EB',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+  },
+  utilButtonText: {
+    color: '#111827',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
