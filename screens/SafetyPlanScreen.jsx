@@ -1,25 +1,14 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-
-
-// Mock AI responses - in a real app, you'd connect to an actual AI service API
-const getAIResponse = (message) => {
-  const lowerMessage = message.toLowerCase();
-  
-  if (lowerMessage.includes('safe') || lowerMessage.includes('safety')) {
-    return "A safety plan should include safe places to go, important documents to take, emergency contacts, and code words to alert others. Would you like me to help you create one step-by-step?";
-  }
-  
-  if (lowerMessage.includes('help') || lowerMessage.includes('emergency')) {
-    return "If you're in immediate danger, please call 911 or your local emergency number. For support, you can contact the National Domestic Violence Hotline at 1-800-799-7233. You're not alone.";
-  }
-  
-  if (lowerMessage.includes('leave') || lowerMessage.includes('escape')) {
-    return "Leaving can be the most dangerous time. Consider:\n1. Having a packed bag hidden\n2. Copies of important documents\n3. A safe place to go\n4. A code word with trusted contacts\nWould you like more specific guidance?";
-  }
-  
-  return "I'm here to help with safety planning and domestic violence support. You can ask me about:\n- Creating a safety plan\n- Emergency contacts\n- Local resources\n- How to prepare to leave safely\nWhat would you like to know?";
-};
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform
+} from 'react-native';
 
 export default function SafetyPlanScreen({ navigation }) {
   const [messages, setMessages] = useState([
@@ -28,48 +17,71 @@ export default function SafetyPlanScreen({ navigation }) {
   const [inputText, setInputText] = useState('');
   const scrollViewRef = useRef();
 
-  const handleSend = () => {
+  const getAIResponse = async (message) => {
+    try {
+      const response = await fetch('https://api.cohere.ai/v1/chat', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer 6xr5q0MxmzkQMq8tswl7KCuR5PWj9LpFXYk8eEWm', // Replace with your key
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'command-r-plus',
+          temperature: 0.5,
+          chat_history: [],
+          message,
+        }),
+      });
+
+      const data = await response.json();
+      return data.text || "I'm sorry, I couldn't understand that.";
+    } catch (error) {
+      console.error('AI fetch error:', error);
+      return "There was a problem connecting to the AI. Please try again.";
+    }
+  };
+
+  const handleSend = async () => {
     if (!inputText.trim()) return;
-    
-    // Add user message
+
     const userMessage = { text: inputText, fromUser: true };
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
-    
-    // Simulate AI thinking delay
-    setTimeout(() => {
-      const aiResponse = { text: getAIResponse(inputText), fromUser: false };
-      setMessages(prev => [...prev, aiResponse]);
-    }, 1000);
+
+    const aiReplyText = await getAIResponse(inputText);
+    const aiMessage = { text: aiReplyText, fromUser: false };
+    setMessages(prev => [...prev, aiMessage]);
   };
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={90}
     >
       <Text style={styles.title}>Safety Planning Assistant</Text>
-      
-      <ScrollView 
+
+      <ScrollView
         ref={scrollViewRef}
         onContentSizeChange={() => scrollViewRef.current.scrollToEnd({ animated: true })}
         style={styles.chatContainer}
         contentContainerStyle={styles.chatContent}
       >
         {messages.map((msg, index) => (
-          <View 
-            key={index} 
+          <View
+            key={index}
             style={[
-              styles.messageBubble, 
+              styles.messageBubble,
               msg.fromUser ? styles.userBubble : styles.aiBubble
             ]}
           >
-            <Text style={styles.messageText}>{msg.text}</Text>
+            <Text style={[styles.messageText, msg.fromUser && styles.userMessageText]}>
+              {msg.text}
+            </Text>
           </View>
         ))}
       </ScrollView>
-      
+
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -80,12 +92,11 @@ export default function SafetyPlanScreen({ navigation }) {
           multiline
         />
         <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-          {/* <MaterialIcons name="send" size={24} color="#6C63FF" /> */}
-          <Text>SEND</Text>
+          <Text style={{ color: '#6C63FF', fontWeight: 'bold' }}>SEND</Text>
         </TouchableOpacity>
       </View>
-      
-      <TouchableOpacity 
+
+      <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.goBack()}
       >

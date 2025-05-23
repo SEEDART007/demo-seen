@@ -25,6 +25,7 @@ const PoliceStationScreen = () => {
 
         Geolocation.getCurrentPosition(
           (position) => {
+              console.log('Location:', position);
             const { latitude, longitude } = position.coords;
             const region = {
               latitude,
@@ -49,7 +50,7 @@ const PoliceStationScreen = () => {
   const fetchPoliceStations = async (lat, lng) => {
     try {
       const response = await axios.get(
-        `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=5000&type=police&key=${GOOGLE_MAPS_API_KEY}`
+        `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=100000&type=police&key=${GOOGLE_MAPS_API_KEY}`
       );
       console.log("Nearby police stations:", response.data.results);
       setPoliceStations(response.data.results);
