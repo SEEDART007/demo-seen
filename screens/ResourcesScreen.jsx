@@ -1,89 +1,77 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Linking
+  Modal,
+  Alert
 } from 'react-native';
 
-export default function ResourcesScreen({ navigation }) {
-  const openLink = (url) => {
-    Linking.openURL(url).catch(() => alert('Unable to open the link'));
+export default function DomesticLawsScreen({ navigation }) {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedLaw, setSelectedLaw] = useState(null);
+
+  const laws = [
+    { title: 'Section 498A IPC', key: '498a' },
+    { title: 'Protection of Women from DV Act, 2005', key: 'pwdva' },
+    { title: 'Section 304B IPC', key: '304b' },
+    { title: 'Dowry Prohibition Act, 1961', key: 'dowry' },
+    { title: 'Section 125 CrPC', key: '125crpc' },
+    { title: 'Section 323 IPC', key: '323' },
+    { title: 'Section 506 IPC', key: '506' },
+  ];
+
+  const explanations = {
+    '498a': 'Section 498A IPC protects married women from cruelty by husband or relatives, including physical and emotional abuse or demands for dowry.',
+    'pwdva': 'The Protection of Women from Domestic Violence Act, 2005 provides protection to women from physical, sexual, verbal, emotional, and economic abuse.',
+    '304b': 'Section 304B IPC deals with dowry deaths. If a woman dies under suspicious circumstances within 7 years of marriage due to dowry, it is punishable.',
+    'dowry': 'The Dowry Prohibition Act, 1961 makes the giving or taking of dowry a punishable offense in India.',
+    '125crpc': 'Section 125 of CrPC provides a legal right to maintenance for wives, children, and parents who are unable to support themselves.',
+    '323': 'Section 323 IPC punishes voluntarily causing hurt with imprisonment or fine.',
+    '506': 'Section 506 IPC deals with criminal intimidation including threats that cause fear of injury or death.',
+  };
+
+  const showExplanation = (key) => {
+    setSelectedLaw(explanations[key]);
+    setModalVisible(true);
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Support & Resources</Text>
+      <Text style={styles.title}>🇮🇳 Domestic Violence Laws in India</Text>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-
-        {/* Emergency Help */}
-        <View style={styles.section}>
-          <Text style={styles.heading}>🚨 Emergency Help</Text>
-          <TouchableOpacity onPress={() => Linking.openURL('tel:8007997233')}>
-            <Text style={styles.text}>📞 National DV Hotline: 1-800-799-7233</Text>
-          </TouchableOpacity>
-          <Text style={styles.text}>📱 Text “START” to 88788</Text>
-          <Text style={styles.text}>🚓 Call 911 if you’re in immediate danger</Text>
-        </View>
-
-        {/* Local Support */}
-        <View style={styles.section}>
-          <Text style={styles.heading}>🏠 Local Support</Text>
-          <Text style={styles.text}>🏡 Shelters – Safe housing and meals</Text>
-          <Text style={styles.text}>👩‍⚖️ Legal Aid – Help with restraining orders & custody</Text>
-          <Text style={styles.text}>🏥 Health Centers – Medical and emotional care</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('PoliceStations')}>
-            <Text style={styles.link}>📍 View Nearby Police Stations</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Counseling & Healing */}
-        <View style={styles.section}>
-          <Text style={styles.heading}>🧠 Mental Health & Healing</Text>
-          <Text style={styles.text}>💬 Trauma-informed therapy (in-person / virtual)</Text>
-          <Text style={styles.text}>👥 Support groups – Connect with survivors</Text>
-          <TouchableOpacity onPress={() => openLink('https://www.opencounseling.com/')}>
-            <Text style={styles.link}>🌐 Free Counseling Resources</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Tech Safety */}
-        <View style={styles.section}>
-          <Text style={styles.heading}>🔐 Tech Safety & Privacy</Text>
-          <Text style={styles.text}>🧹 How to clear browser & app history</Text>
-          <Text style={styles.text}>📵 Disable location/sharing on social media</Text>
-          <TouchableOpacity onPress={() => openLink('https://www.techsafety.org/resources-survivors')}>
-            <Text style={styles.link}>🔗 Visit TechSafety.org</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Rebuilding Tools */}
-        <View style={styles.section}>
-          <Text style={styles.heading}>💼 Rebuild & Restart</Text>
-          <Text style={styles.text}>💰 Financial assistance and budgeting tools</Text>
-          <Text style={styles.text}>👶 Childcare and education aid</Text>
-          <TouchableOpacity onPress={() => openLink('https://www.womenslaw.org/')}>
-            <Text style={styles.link}>⚖️ Legal Rights & FAQs – WomensLaw.org</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Educational Tools */}
-        <View style={styles.section}>
-          <Text style={styles.heading}>📚 Learn & Prepare</Text>
-          <Text style={styles.text}>📄 Safety Planning Guide</Text>
-          <Text style={styles.text}>📊 Quiz: Am I in an abusive relationship?</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('SafetyPlan')}>
-            <Text style={styles.link}>📝 Create Your Safety Plan</Text>
-          </TouchableOpacity>
-        </View>
+        {laws.map((law, index) => (
+          <View key={index} style={styles.card}>
+            <Text style={styles.cardTitle}>{law.title}</Text>
+            <TouchableOpacity onPress={() => showExplanation(law.key)}>
+              <Text style={styles.infoButton}>i</Text>
+            </TouchableOpacity>
+          </View>
+        ))}
       </ScrollView>
 
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Text style={styles.backButtonText}>Go Back</Text>
       </TouchableOpacity>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>{selectedLaw}</Text>
+            <TouchableOpacity style={styles.modalClose} onPress={() => setModalVisible(false)}>
+              <Text style={styles.backButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -91,31 +79,38 @@ export default function ResourcesScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8f9fa', paddingTop: 40, paddingHorizontal: 20 },
   title: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
     color: '#6C63FF',
     textAlign: 'center',
   },
-  scrollContent: { paddingBottom: 50 },
-  section: { marginBottom: 30 },
-  heading: {
-    fontSize: 18,
-    fontWeight: '700',
+  scrollContent: { paddingBottom: 40 },
+  card: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardTitle: {
+    fontSize: 16,
     color: '#333',
-    marginBottom: 10,
+    flex: 1,
+    fontWeight: '600',
   },
-  text: {
-    fontSize: 16,
-    color: '#444',
-    marginBottom: 8,
-    paddingLeft: 5,
-  },
-  link: {
-    fontSize: 16,
+  infoButton: {
+    fontSize: 18,
     color: '#6C63FF',
-    textDecorationLine: 'underline',
-    marginTop: 8,
+    paddingHorizontal: 10,
+    fontWeight: 'bold',
   },
   backButton: {
     backgroundColor: '#6C63FF',
@@ -129,5 +124,35 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  modalView: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 25,
+    marginHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalText: {
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 15,
+  },
+  modalClose: {
+    alignSelf: 'center',
+    marginTop: 10,
+    backgroundColor: '#6C63FF',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
   },
 });
