@@ -68,7 +68,6 @@ const indianDVLaws = [
   },
 ];
 
-
 export default function IndianLawsScreen({ navigation }) {
   const [selectedLaw, setSelectedLaw] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -134,11 +133,13 @@ export default function IndianLawsScreen({ navigation }) {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>{selectedLaw?.title}</Text>
-            <Text style={styles.modalText}>
-              {loading
-                ? 'Fetching AI explanation...'
-                : aiExplanation ||selectedLaw?.description}
-            </Text>
+            <ScrollView style={styles.scrollableExplanation} showsVerticalScrollIndicator={true}>
+              <Text style={styles.modalText}>
+                {loading
+                  ? 'Fetching AI explanation...'
+                  : aiExplanation || selectedLaw?.description}
+              </Text>
+            </ScrollView>
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={styles.aiButton}
@@ -161,86 +162,115 @@ export default function IndianLawsScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8f9fa', paddingTop: 40, paddingHorizontal: 20 },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#6C63FF',
-    textAlign: 'center',
-    marginBottom: 20,
+  container: {
+    flex: 1,
+    backgroundColor: '#F2F4F7',
+    paddingTop: 50,
+    paddingHorizontal: 20,
   },
-  scrollContent: { paddingBottom: 100 },
+  title: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#3A3A3C',
+    textAlign: 'center',
+    marginBottom: 30,
+    letterSpacing: 0.5,
+  },
+  scrollContent: {
+    paddingBottom: 120,
+  },
   lawCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 16,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 14,
-    borderRadius: 10,
-    marginBottom: 12,
-    elevation: 2,
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 4,
   },
   lawTitle: {
-    fontSize: 16,
-    color: '#333',
-    maxWidth: '80%',
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#1C1C1E',
+    flex: 1,
+    flexWrap: 'wrap',
+    marginRight: 12,
   },
   infoButton: {
-    backgroundColor: '#6C63FF',
-    borderRadius: 20,
-    width: 30,
-    height: 30,
+    backgroundColor: '#6366F1',
+    borderRadius: 100,
+    width: 34,
+    height: 34,
     justifyContent: 'center',
     alignItems: 'center',
   },
   infoButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
-    width: '88%',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
-    elevation: 5,
+    width: '92%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
-    color: '#6C63FF',
-    marginBottom: 10,
+    color: '#4B49AC',
     textAlign: 'center',
+    marginBottom: 12,
+  },
+  scrollableExplanation: {
+    maxHeight: 250,
+    marginBottom: 24,
   },
   modalText: {
-    fontSize: 15,
-    color: '#333',
-    marginBottom: 20,
+    fontSize: 15.5,
+    color: '#3A3A3C',
+    lineHeight: 24,
+    textAlign: 'justify',
   },
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   aiButton: {
-    backgroundColor: '#6C63FF',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 8,
+    backgroundColor: '#4B49AC',
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 10,
+    flex: 1,
+    marginRight: 10,
   },
   closeButton: {
-    backgroundColor: '#444',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 8,
+    backgroundColor: '#6B7280',
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 10,
+    flex: 1,
   },
   buttonText: {
-    color: '#fff',
+    color: '#FFFFFF',
+    fontSize: 15,
     fontWeight: '600',
+    textAlign: 'center',
   },
 });
