@@ -6,69 +6,153 @@ import {
   ScrollView,
   TouchableOpacity,
   Modal,
-  Alert
+  Alert,
 } from 'react-native';
 
-export default function DomesticLawsScreen({ navigation }) {
-  const [modalVisible, setModalVisible] = useState(false);
+const COHERE_API_KEY = '6xr5q0MxmzkQMq8tswl7KCuR5PWj9LpFXYk8eEWm';
+
+const indianDVLaws = [
+  {
+    id: 1,
+    title: 'Protection of Women from DV Act, 2005',
+    description:
+      'A comprehensive law that aims to protect women from domestic violence including physical, sexual, emotional, verbal, and economic abuse.',
+  },
+  {
+    id: 2,
+    title: 'Section 498A IPC',
+    description:
+      'Punishes a husband or his relatives for subjecting a woman to cruelty, including physical harm and harassment over dowry.',
+  },
+  {
+    id: 3,
+    title: 'Section 304B IPC',
+    description:
+      'Applies when a woman dies due to burns, injuries, or under suspicious circumstances within 7 years of marriage and dowry harassment is suspected.',
+  },
+  {
+    id: 4,
+    title: 'Dowry Prohibition Act, 1961',
+    description:
+      'Makes giving, taking, or demanding dowry a criminal offense. It seeks to eliminate the social evil of dowry and related violence.',
+  },
+  {
+    id: 5,
+    title: 'Section 125 CrPC',
+    description:
+      'Provides the right to claim maintenance for a wife (including divorced), children, or parents who are unable to maintain themselves.',
+  },
+  {
+    id: 6,
+    title: 'Hindu Marriage Act, 1955',
+    description:
+      'Allows for judicial separation and divorce on grounds including cruelty, desertion, and adultery in Hindu marriages.',
+  },
+  {
+    id: 7,
+    title: 'Section 23 DV Act',
+    description:
+      'Empowers the court to pass interim and ex parte orders for the immediate protection of women from domestic violence.',
+  },
+  {
+    id: 8,
+    title: 'Section 18 DV Act',
+    description:
+      'Provides for protection orders to prevent the respondent from committing any act of domestic violence or aiding in its commission.',
+  },
+  {
+    id: 9,
+    title: 'Section 19 DV Act',
+    description:
+      'Enables women to remain in their shared household and bars the abuser from dispossessing or disturbing them from their residence.',
+  },
+];
+
+
+export default function IndianLawsScreen({ navigation }) {
   const [selectedLaw, setSelectedLaw] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [aiExplanation, setAiExplanation] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const laws = [
-    { title: 'Section 498A IPC', key: '498a' },
-    { title: 'Protection of Women from DV Act, 2005', key: 'pwdva' },
-    { title: 'Section 304B IPC', key: '304b' },
-    { title: 'Dowry Prohibition Act, 1961', key: 'dowry' },
-    { title: 'Section 125 CrPC', key: '125crpc' },
-    { title: 'Section 323 IPC', key: '323' },
-    { title: 'Section 506 IPC', key: '506' },
-  ];
+  const fetchAIExplanation = async (lawTitle) => {
+    try {
+      setLoading(true);
+      const response = await fetch('https://api.cohere.ai/v1/chat', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${COHERE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'command-r-plus',
+          message: `Explain this Indian domestic violence law in simple terms: ${lawTitle}`,
+        }),
+      });
 
-  const explanations = {
-    '498a': 'Section 498A IPC protects married women from cruelty by husband or relatives, including physical and emotional abuse or demands for dowry.',
-    'pwdva': 'The Protection of Women from Domestic Violence Act, 2005 provides protection to women from physical, sexual, verbal, emotional, and economic abuse.',
-    '304b': 'Section 304B IPC deals with dowry deaths. If a woman dies under suspicious circumstances within 7 years of marriage due to dowry, it is punishable.',
-    'dowry': 'The Dowry Prohibition Act, 1961 makes the giving or taking of dowry a punishable offense in India.',
-    '125crpc': 'Section 125 of CrPC provides a legal right to maintenance for wives, children, and parents who are unable to support themselves.',
-    '323': 'Section 323 IPC punishes voluntarily causing hurt with imprisonment or fine.',
-    '506': 'Section 506 IPC deals with criminal intimidation including threats that cause fear of injury or death.',
+      const data = await response.json();
+      if (data?.text) {
+        setAiExplanation(data.text);
+      } else {
+        setAiExplanation('No explanation found.');
+      }
+    } catch (err) {
+      console.error(err);
+      Alert.alert('Error', 'Failed to fetch explanation from AI.');
+      setAiExplanation('Something went wrong.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const showExplanation = (key) => {
-    setSelectedLaw(explanations[key]);
+  const openModal = (law) => {
+    setSelectedLaw(law);
+    setAiExplanation('');
     setModalVisible(true);
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>🇮🇳 Domestic Violence Laws in India</Text>
-
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {laws.map((law, index) => (
-          <View key={index} style={styles.card}>
-            <Text style={styles.cardTitle}>{law.title}</Text>
-            <TouchableOpacity onPress={() => showExplanation(law.key)}>
-              <Text style={styles.infoButton}>i</Text>
+        {indianDVLaws.map((law) => (
+          <View key={law.id} style={styles.lawCard}>
+            <Text style={styles.lawTitle}>{law.title}</Text>
+            <TouchableOpacity style={styles.infoButton} onPress={() => openModal(law)}>
+              <Text style={styles.infoButtonText}>i</Text>
             </TouchableOpacity>
           </View>
         ))}
       </ScrollView>
 
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Text style={styles.backButtonText}>Go Back</Text>
-      </TouchableOpacity>
-
       <Modal
+        visible={modalVisible}
         animationType="slide"
         transparent={true}
-        visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>{selectedLaw}</Text>
-            <TouchableOpacity style={styles.modalClose} onPress={() => setModalVisible(false)}>
-              <Text style={styles.backButtonText}>Close</Text>
-            </TouchableOpacity>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>{selectedLaw?.title}</Text>
+            <Text style={styles.modalText}>
+              {loading
+                ? 'Fetching AI explanation...'
+                : aiExplanation ||selectedLaw?.description}
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.aiButton}
+                onPress={() => fetchAIExplanation(selectedLaw.title)}
+              >
+                <Text style={styles.buttonText}>Explain with AI</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.buttonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -79,80 +163,84 @@ export default function DomesticLawsScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8f9fa', paddingTop: 40, paddingHorizontal: 20 },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 20,
     color: '#6C63FF',
     textAlign: 'center',
+    marginBottom: 20,
   },
-  scrollContent: { paddingBottom: 40 },
-  card: {
+  scrollContent: { paddingBottom: 100 },
+  lawCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#fff',
+    padding: 14,
     borderRadius: 10,
-    padding: 15,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
     elevation: 2,
   },
-  cardTitle: {
+  lawTitle: {
     fontSize: 16,
     color: '#333',
-    flex: 1,
-    fontWeight: '600',
+    maxWidth: '80%',
   },
   infoButton: {
-    fontSize: 18,
-    color: '#6C63FF',
-    paddingHorizontal: 10,
-    fontWeight: 'bold',
-  },
-  backButton: {
     backgroundColor: '#6C63FF',
-    borderRadius: 25,
-    paddingVertical: 12,
+    borderRadius: 20,
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 10,
   },
-  backButtonText: {
+  infoButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
   modalOverlay: {
     flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.35)',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.4)',
   },
-  modalView: {
+  modalContent: {
+    width: '88%',
     backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 25,
-    marginHorizontal: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    borderRadius: 12,
+    padding: 20,
     elevation: 5,
   },
-  modalText: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 15,
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#6C63FF',
+    marginBottom: 10,
+    textAlign: 'center',
   },
-  modalClose: {
-    alignSelf: 'center',
-    marginTop: 10,
+  modalText: {
+    fontSize: 15,
+    color: '#333',
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  aiButton: {
     backgroundColor: '#6C63FF',
-    paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 20,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+  },
+  closeButton: {
+    backgroundColor: '#444',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '600',
   },
 });
