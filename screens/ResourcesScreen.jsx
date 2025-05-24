@@ -11,6 +11,7 @@ import {
   Clipboard,
   Animated,
 } from 'react-native';
+import Tts from 'react-native-tts'; // 👈 Import TTS
 
 const COHERE_API_KEY = '6xr5q0MxmzkQMq8tswl7KCuR5PWj9LpFXYk8eEWm';
 
@@ -42,6 +43,7 @@ export default function IndianLawsScreen() {
       }).start();
     } else {
       fadeAnim.setValue(0);
+      Tts.stop(); // 👈 Stop speaking when modal closes
     }
   }, [modalVisible]);
 
@@ -90,8 +92,11 @@ export default function IndianLawsScreen() {
     }
   };
 
-  const handleSave = () => {
-    Alert.alert('Save', 'Save functionality can be integrated with local storage or file system.');
+  const handleSpeak = () => {
+    const textToSpeak = aiExplanation || selectedLaw?.description;
+    if (textToSpeak) {
+      Tts.speak(textToSpeak);
+    }
   };
 
   const openModal = (law) => {
@@ -138,8 +143,8 @@ export default function IndianLawsScreen() {
               <TouchableOpacity style={styles.utilButton} onPress={handleShare}>
                 <Text style={styles.utilButtonText}>🔗 Share</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.utilButton} onPress={handleSave}>
-                <Text style={styles.utilButtonText}>💾 Save</Text>
+              <TouchableOpacity style={styles.utilButton} onPress={handleSpeak}>
+                <Text style={styles.utilButtonText}>🔊 Speak</Text>
               </TouchableOpacity>
             </View>
           </Animated.View>
