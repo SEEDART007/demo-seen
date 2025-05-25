@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Alert, PermissionsAndroid, Platform } from 'react-native';
+import { View, Text, StyleSheet, Alert, PermissionsAndroid, Platform, TextInput, Button } from 'react-native';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import RNFS from 'react-native-fs';
 import axios from 'axios';
@@ -10,6 +10,8 @@ const DEEPGRAM_API_KEY = '439e9d68b1482b32378dd2f10c957276d906430f';
 const HelpDetectionScreen = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
+  const [triggerWord, setTriggerWord] = useState('help');
+  const [hasStarted, setHasStarted] = useState(false);
   const stopFlag = useRef(false);
   const audioRecorderPlayer = useRef(new AudioRecorderPlayer());
 
@@ -18,10 +20,8 @@ const HelpDetectionScreen = () => {
     const init = async () => {
       const granted = await requestPermissions();
       if (isMounted) setHasPermission(granted);
-      if (granted) startRecordingLoop();
     };
     init();
-
     return () => {
       isMounted = false;
       stopFlag.current = true;
@@ -44,6 +44,7 @@ const HelpDetectionScreen = () => {
   };
 
   const startRecordingLoop = async () => {
+    setHasStarted(true);
     const filePath = `${RNFS.DocumentDirectoryPath}/help-detect.m4a`;
 
     while (!stopFlag.current) {
@@ -79,14 +80,21 @@ const HelpDetectionScreen = () => {
         const transcript = response.data?.results?.channels?.[0]?.alternatives?.[0]?.transcript;
         console.log('Transcript:', transcript);
 
-        if (transcript && transcript.toLowerCase().includes('help')) {
-          Alert.alert('🆘 Help Detected!', 'Detected the word "help" in speech.');
+        if (
+          transcript &&
+          triggerWord &&
+          transcript.toLowerCase().includes(triggerWord.toLowerCase())
+        ) {
+          Alert.alert('🆘 Trigger Detected!', `Detected the word "${triggerWord}" in speech.`);
           stopFlag.current = true;
+          setHasStarted(false);
           break;
         }
       } catch (err) {
         console.error('Recording loop error:', err);
         setIsRecording(false);
+        setHasStarted(false);
+        break;
       }
     }
   };
@@ -94,13 +102,30 @@ const HelpDetectionScreen = () => {
   const stopRecording = () => {
     try {
       audioRecorderPlayer.current.stopRecorder();
+      setHasStarted(false);
+      stopFlag.current = true;
     } catch (e) {}
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>🎙️ Listening for "help"... </Text>
-      <Text style={styles.status}>{isRecording ? 'Recording...' : 'Waiting...'}</Text>
+      <Text style={styles.title}>🎙️ Listening for trigger word... </Text>
+      <Text style={styles.status}>{isRecording ? 'Recording...' : hasStarted ? 'Processing...' : 'Waiting...'}</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Enter trigger word"
+        value={triggerWord}
+        onChangeText={setTriggerWord}
+      />
+      {!hasStarted && hasPermission && (
+        <Button title="Start Listening" onPress={() => {
+          stopFlag.current = false;
+          startRecordingLoop();
+        }} />
+      )}
+      {hasStarted && (
+        <Button title="Stop Listening" color="#f44" onPress={stopRecording} />
+      )}
       {!hasPermission && (
         <Text style={{ color: 'red', marginTop: 20 }}>
           Permissions not granted. Please allow microphone access.
@@ -127,5 +152,16 @@ const styles = StyleSheet.create({
   status: {
     color: '#00ffcc',
     fontSize: 16,
+  },
+  input: {
+    backgroundColor: '#fff',
+    color: '#111',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    fontSize: 16,
+    marginTop: 20,
+    width: '80%',
+    marginBottom: 30,
   },
 });
