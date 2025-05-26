@@ -1,14 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Linking, TouchableOpacity, ScrollView, TextInput, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Linking,
+  TouchableOpacity,
+  ScrollView,
+  TextInput,
+  Alert,
+  KeyboardAvoidingView,
+  Platform
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  Phone,
+  Shield,
+  Hospital,
+  HelpCircle,
+  Home,
+  Trash2
+} from 'lucide-react-native';
 
 const STORAGE_KEY = 'EMERGENCY_CONTACTS';
 
+const ICON_MAP = {
+  phone: Phone,
+  shield: Shield,
+  hospital: Hospital,
+  help: HelpCircle,
+  home: Home
+};
+
 const DEFAULT_CONTACTS = [
-  { name: "Local Police Station", number: "100", emoji: "🚓", color: "#3a86ff" },
-  { name: "Ambulance Service", number: "108", emoji: "🚑", color: "#ff006e" },
-  { name: "Women's Helpline", number: "1091", emoji: "👩‍🦰", color: "#8338ec" },
-  { name: "Domestic Violence Helpline", number: "1-800-799-7233", emoji: "🏠", color: "#fb5607" }
+  { name: "Local Police Station", number: "100", icon: "shield", color: "#3a86ff" },
+  { name: "Ambulance Service", number: "108", icon: "hospital", color: "#ff006e" },
+  { name: "Women's Helpline", number: "1091", icon: "help", color: "#8338ec" },
+  { name: "Domestic Violence Helpline", number: "1-800-799-7233", icon: "home", color: "#fb5607" }
 ];
 
 export default function EmergencyScreen({ navigation }) {
@@ -16,7 +43,6 @@ export default function EmergencyScreen({ navigation }) {
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
 
-  // Load contacts from storage on mount
   useEffect(() => {
     (async () => {
       try {
@@ -33,7 +59,6 @@ export default function EmergencyScreen({ navigation }) {
     })();
   }, []);
 
-  // Save contacts to storage whenever they change
   const persistContacts = async (contacts) => {
     setEmergencyContacts(contacts);
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(contacts));
@@ -48,12 +73,14 @@ export default function EmergencyScreen({ navigation }) {
       Alert.alert('Missing Information', 'Please enter both name and number.');
       return;
     }
+
     const newContact = {
       name: newName,
       number: newNumber,
-      emoji: "📞",
+      icon: "phone",
       color: "#4ecdc4"
     };
+
     const updated = [...emergencyContacts, newContact];
     await persistContacts(updated);
     setNewName('');
@@ -74,26 +101,35 @@ export default function EmergencyScreen({ navigation }) {
         </View>
 
         <View style={styles.cardContainer}>
-          {emergencyContacts.map((contact, index) => (
-            <View key={index} style={[styles.contactCard, { borderLeftColor: contact.color }]}>
-              <TouchableOpacity
-                style={[styles.emojiContainer, { backgroundColor: `${contact.color}20` }]}
-                onPress={() => handleCall(contact.number)}
+          {emergencyContacts.map((contact, index) => {
+            const Icon = ICON_MAP[contact.icon] || Phone;
+            return (
+              <View
+                key={index}
+                style={[styles.contactCard, { borderLeftColor: contact.color }]}
               >
-                <Text style={styles.emoji}>{contact.emoji}</Text>
-              </TouchableOpacity>
-              <View style={styles.contactInfo}>
-                <Text style={styles.contactName}>{contact.name}</Text>
-                <Text style={styles.contactNumber}>{contact.number}</Text>
+                <TouchableOpacity
+                  style={[styles.emojiContainer, { backgroundColor: `${contact.color}20` }]}
+                  onPress={() => handleCall(contact.number)}
+                  activeOpacity={0.8}
+                >
+                  <Icon color={contact.color} size={24} />
+                </TouchableOpacity>
+                <View style={styles.contactInfo}>
+                  <Text style={styles.contactName}>{contact.name}</Text>
+                  <Text style={styles.contactNumber}>{contact.number}</Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={() => handleDelete(index)}
+                >
+                  <Trash2 color="white" size={18} />
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(index)}>
-                <Text style={styles.deleteButtonText}>✖</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
+            );
+          })}
         </View>
 
-        {/* Add New Contact Section */}
         <View style={styles.addContactContainer}>
           <Text style={styles.addContactTitle}>Add Emergency Contact</Text>
           <TextInput
@@ -116,7 +152,7 @@ export default function EmergencyScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
@@ -184,9 +220,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
   },
-  emoji: {
-    fontSize: 22,
-  },
   contactInfo: {
     flex: 1,
   },
@@ -208,11 +241,6 @@ const styles = StyleSheet.create({
     height: 32,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  deleteButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
   },
   addContactContainer: {
     backgroundColor: '#fff',
