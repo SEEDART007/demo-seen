@@ -5,6 +5,7 @@ import PoliceStationsScreen from './screens/PoliceStationScreen';
 import VoiceTriggerSetupScreen from './screens/VoiceTriggerSetupScreen';
 import QuizScreen from './screens/QuizScreen';
 import QuizResults from './screens/QuizResults';
+import MentalHealthScreen from './screens/MentalHealthScreen';
 
 
 import HomeScreen from './screens/HomeScreen'; // make sure this path is correct
@@ -36,6 +37,8 @@ export default function App() {
          <Stack.Screen name="Quiz" component={QuizScreen} />
          <Stack.Screen name="News" component={Articles} />
         <Stack.Screen name="Result" component={QuizResults} />
+                <Stack.Screen name="MentalHealth" component={MentalHealthScreen} />
+
       </Stack.Navigator>
     </NavigationContainer>
   );

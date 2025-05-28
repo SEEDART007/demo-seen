@@ -72,12 +72,19 @@ const HomeScreen = ({ navigation }) => {
       screen: 'Quiz',
       color: '#ec4899'
     },
+    
     {
   icon: <BookOpen color="#fff" size={28} />,
   title: 'Latest Articles',
   screen: 'News',
   color: '#0ea5e9',
-}
+},
+{
+    icon: <Heart color="#fff" size={28} />,
+    title: 'Mental Health',
+    screen: 'MentalHealth',
+    color: '#14b8a6', // Calming teal
+  }
   ];
 
   useEffect(() => {
