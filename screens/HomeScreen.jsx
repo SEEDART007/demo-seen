@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,8 @@ import {
   SafeAreaView,
   ScrollView,
   Dimensions,
+  Animated,
+  Easing
 } from 'react-native';
 import {
   Heart,
@@ -22,6 +24,11 @@ import {
 const { width } = Dimensions.get('window');
 
 const HomeScreen = ({ navigation }) => {
+  // Animation References
+  const floatAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+
   const features = [
     { 
       icon: <Phone color="#fff" size={28} />,
@@ -59,21 +66,91 @@ const HomeScreen = ({ navigation }) => {
       screen: 'PoliceStations',
       color: '#06b6d4'
     },
+      {
+    icon: <ClipboardList color="#fff" size={28} />,
+    title: 'Abuse Quiz',
+    screen: 'Quiz',
+    color: '#ec4899'
+  }
   ];
+
+  useEffect(() => {
+    // Floating animation for heart icon
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatAnim, {
+          toValue: 1,
+          duration: 1500,
+          easing: Easing.linear,
+          useNativeDriver: true
+        }),
+        Animated.timing(floatAnim, {
+          toValue: 0,
+          duration: 1500,
+          easing: Easing.linear,
+          useNativeDriver: true
+        })
+      ])
+    ).start();
+
+    // Fade-in animation for text
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        speed: 12,
+        useNativeDriver: true
+      })
+    ]).start();
+  }, []);
+
+  const floatInterpolation = floatAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-8, 8]
+  });
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* Header */}
+        {/* Animated Header Section */}
         <View style={styles.header}>
-          <View style={styles.headerIcon}>
-            <Heart fill="#ef4444" color="#fff" size={32} />
+          <Animated.View style={[styles.headerIcon, {
+            transform: [{ translateY: floatInterpolation }]
+          }]}>
+            <Heart fill="#fff" color="#6C63FF" size={36} />
+          </Animated.View>
+
+          <Animated.View style={{
+            opacity: fadeAnim,
+            transform: [{ scale: scaleAnim }]
+          }}>
+            <Text style={styles.title}>Hope Connect</Text>
+            <Text style={styles.subtitle}>You are not alone. We're here to help.</Text>
+          </Animated.View>
+
+          {/* Animated Background Elements */}
+          <View style={styles.bubbleContainer}>
+            {[...Array(6)].map((_, i) => (
+              <Animated.View
+                key={i}
+                style={[styles.bubble, {
+                  transform: [{
+                    rotate: floatAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['0deg', `${i % 2 ? 45 : -45}deg`]
+                    })
+                  }]
+                }]}
+              />
+            ))}
           </View>
-          <Text style={styles.title}>Hope Connect</Text>
-          <Text style={styles.subtitle}>You are not alone. We're here to help.</Text>
         </View>
 
-        {/* Quick Exit */}
+        {/* Quick Exit Button */}
         <TouchableOpacity 
           style={styles.quickExit}
           onPress={() => navigation.navigate('Exit')}
@@ -110,28 +187,37 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#6C63FF',
-    padding: 24,
+    padding: 32,
     alignItems: 'center',
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
     marginBottom: 24,
+    overflow: 'hidden',
   },
   headerIcon: {
     backgroundColor: 'rgba(255,255,255,0.2)',
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 16,
+    padding: 18,
+    borderRadius: 20,
+    marginBottom: 20,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '800',
+    fontSize: 34,
+    fontWeight: '900',
     color: '#fff',
     marginBottom: 8,
+    letterSpacing: 0.8,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0,0,0,0.1)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#e2e8f0',
+    fontSize: 17,
+    color: 'rgba(255,255,255,0.95)',
     textAlign: 'center',
+    lineHeight: 24,
+    marginTop: 6,
+    fontStyle: 'italic',
   },
   quickExit: {
     backgroundColor: '#ef4444',
@@ -143,12 +229,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 24,
     marginBottom: 24,
     gap: 8,
-    elevation: 2,
+    elevation: 3,
   },
   quickExitText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+    letterSpacing: 0.3,
   },
   grid: {
     flexDirection: 'row',
@@ -158,25 +245,42 @@ const styles = StyleSheet.create({
   },
   card: {
     width: (width - 48) / 2,
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 20,
     aspectRatio: 1,
     justifyContent: 'space-between',
-    elevation: 2,
+    elevation: 3,
   },
   cardIcon: {
     backgroundColor: 'rgba(255,255,255,0.2)',
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+    width: 50,
+    height: 50,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
   },
   cardTitle: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     lineHeight: 24,
+    textShadowColor: 'rgba(0,0,0,0.15)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  bubbleContainer: {
+    ...StyleSheet.absoluteFillObject,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 30,
+    opacity: 0.2,
+  },
+  bubble: {
+    width: 12,
+    height: 12,
+    backgroundColor: 'rgba(255,255,255,0.4)',
+    borderRadius: 6,
+    marginTop: 20,
   },
 });
 

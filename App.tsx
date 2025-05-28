@@ -3,6 +3,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import PoliceStationsScreen from './screens/PoliceStationScreen';
 import VoiceTriggerSetupScreen from './screens/VoiceTriggerSetupScreen';
+import QuizScreen from './screens/QuizScreen';
+import QuizResults from './screens/QuizResults';
 
 
 import HomeScreen from './screens/HomeScreen'; // make sure this path is correct
@@ -30,6 +32,8 @@ export default function App() {
         <Stack.Screen name="PoliceStations" component={PoliceStationsScreen} />
         <Stack.Screen name="VoiceTrigger" component={VoiceTriggerSetupScreen} />
         <Stack.Screen name="Exit" component={ExitScreen} options={{ headerShown: false }} />
+         <Stack.Screen name="Quiz" component={QuizScreen} />
+        <Stack.Screen name="Result" component={QuizResults} />
       </Stack.Navigator>
     </NavigationContainer>
   );
