@@ -10,10 +10,14 @@ import {
   Share,
   Clipboard,
   Animated,
+  Dimensions,
+  StatusBar
 } from 'react-native';
-import Tts from 'react-native-tts'; // 👈 Import TTS
+import Tts from 'react-native-tts';
+import { Info, X, Copy, Share2, Volume2, ChevronRight } from 'lucide-react-native';
 
 const COHERE_API_KEY = '6xr5q0MxmzkQMq8tswl7KCuR5PWj9LpFXYk8eEWm';
+const { width } = Dimensions.get('window');
 
 const indianDVLaws = [
   { id: 1, title: 'Protection of Women from DV Act, 2005', description: 'Protects women from all forms of domestic violence.' },
@@ -33,17 +37,41 @@ export default function IndianLawsScreen() {
   const [aiExplanation, setAiExplanation] = useState('');
   const [loading, setLoading] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.9)).current;
+  const cardAnimations = useRef(indianDVLaws.map(() => new Animated.Value(0))).current;
+
+  useEffect(() => {
+    // Animate cards in sequence
+    const animations = cardAnimations.map((anim, index) => {
+      return Animated.spring(anim, {
+        toValue: 1,
+        friction: 6,
+        delay: index * 100,
+        useNativeDriver: true,
+      });
+    });
+    
+    Animated.stagger(100, animations).start();
+  }, []);
 
   useEffect(() => {
     if (modalVisible) {
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          friction: 6,
+          useNativeDriver: true,
+        })
+      ]).start();
     } else {
       fadeAnim.setValue(0);
-      Tts.stop(); // 👈 Stop speaking when modal closes
+      scaleAnim.setValue(0.9);
+      Tts.stop();
     }
   }, [modalVisible]);
 
@@ -107,44 +135,93 @@ export default function IndianLawsScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>🇮🇳 Domestic Violence Laws in India</Text>
+      <StatusBar barStyle="light-content" backgroundColor="#6a11cb" />
+      
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>🇮🇳 Indian Domestic Violence Laws</Text>
+        <Text style={styles.subtitle}>Know your legal rights and protections</Text>
+      </View>
+      
+      {/* Main Content */}
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {indianDVLaws.map((law) => (
-          <View key={law.id} style={styles.lawCard}>
-            <Text style={styles.lawTitle}>{law.title}</Text>
-            <TouchableOpacity style={styles.infoButton} onPress={() => openModal(law)}>
-              <Text style={styles.infoButtonText}>i</Text>
+        {indianDVLaws.map((law, index) => (
+          <Animated.View 
+            key={law.id} 
+            style={[
+              styles.lawCard,
+              { 
+                transform: [{ scale: cardAnimations[index] }],
+                opacity: cardAnimations[index]
+              }
+            ]}
+          >
+            <View style={styles.lawNumber}>
+              <Text style={styles.lawNumberText}>{law.id}</Text>
+            </View>
+            <View style={styles.lawContent}>
+              <Text style={styles.lawTitle}>{law.title}</Text>
+              <Text style={styles.lawDescription} numberOfLines={2}>{law.description}</Text>
+            </View>
+            <TouchableOpacity 
+              style={styles.infoButton} 
+              onPress={() => openModal(law)}
+            >
+              <ChevronRight size={24} color="#4f46e5" />
             </TouchableOpacity>
-          </View>
+          </Animated.View>
         ))}
       </ScrollView>
 
       <Modal visible={modalVisible} transparent onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalOverlay}>
-          <Animated.View style={[styles.modalContent, { opacity: fadeAnim }]}>
-            <Text style={styles.modalTitle}>{selectedLaw?.title}</Text>
-            <ScrollView style={styles.textScroll} contentContainerStyle={{ paddingBottom: 20 }}>
-              <Text style={styles.modalText}>
-                {loading ? 'Fetching AI explanation...' : aiExplanation || selectedLaw?.description}
-              </Text>
-            </ScrollView>
-            <View style={styles.modalButtons}>
-              <TouchableOpacity style={styles.aiButton} onPress={() => fetchAIExplanation(selectedLaw.title)}>
-                <Text style={styles.buttonText}>Explain with AI</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
-                <Text style={styles.buttonText}>Close</Text>
+          <Animated.View style={[styles.modalContent, { 
+            opacity: fadeAnim,
+            transform: [{ scale: scaleAnim }]
+          }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{selectedLaw?.title}</Text>
+              <TouchableOpacity 
+                style={styles.closeIcon} 
+                onPress={() => setModalVisible(false)}
+              >
+                <X size={28} color="#64748b" />
               </TouchableOpacity>
             </View>
+            
+            <ScrollView style={styles.textScroll} contentContainerStyle={{ paddingBottom: 20 }}>
+              {loading ? (
+                <View style={styles.loadingContainer}>
+                  <Text style={styles.loadingText}>⚡ Generating AI explanation...</Text>
+                </View>
+              ) : (
+                <Text style={styles.modalText}>
+                  {aiExplanation || selectedLaw?.description}
+                </Text>
+              )}
+            </ScrollView>
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={[styles.actionButton, styles.aiButton]} 
+                onPress={() => fetchAIExplanation(selectedLaw.title)}
+              >
+                <Text style={styles.actionButtonText}>🤖 Explain with AI</Text>
+              </TouchableOpacity>
+            </View>
+            
             <View style={styles.utilButtons}>
               <TouchableOpacity style={styles.utilButton} onPress={handleCopy}>
-                <Text style={styles.utilButtonText}>📋 Copy</Text>
+                <Copy size={20} color="#4f46e5" />
+                <Text style={styles.utilButtonText}>Copy</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.utilButton} onPress={handleShare}>
-                <Text style={styles.utilButtonText}>🔗 Share</Text>
+                <Share2 size={20} color="#4f46e5" />
+                <Text style={styles.utilButtonText}>Share</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.utilButton} onPress={handleSpeak}>
-                <Text style={styles.utilButtonText}>🔊 Speak</Text>
+                <Volume2 size={20} color="#4f46e5" />
+                <Text style={styles.utilButtonText}>Speak</Text>
               </TouchableOpacity>
             </View>
           </Animated.View>
@@ -155,43 +232,86 @@ export default function IndianLawsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F2F4F7', paddingTop: 50, paddingHorizontal: 20 },
-  title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#3A3A3C',
-    textAlign: 'center',
-    marginBottom: 30,
-    letterSpacing: 0.5,
+  container: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
   },
-  scrollContent: { paddingBottom: 120 },
-  lawCard: {
-    backgroundColor: '#FFFFFF',
+  header: {
+    backgroundColor: '#6a11cb',
+    paddingVertical: 30,
+    paddingHorizontal: 25,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 15,
+    marginBottom: 20,
+  },
+  title: {
+    color: '#fff',
+    fontSize: 28,
+    fontWeight: '800',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  subtitle: {
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 16,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  scrollContent: { 
     padding: 20,
+    paddingBottom: 100
+  },
+  lawCard: {
+    backgroundColor: '#fff',
     borderRadius: 16,
     marginBottom: 16,
+    padding: 18,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    shadowColor: '#e2e8f0',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 8,
     elevation: 4,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
   },
-  lawTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#1C1C1E',
-    flex: 1,
-    flexWrap: 'wrap',
-    marginRight: 12,
-  },
-  infoButton: {
-    backgroundColor: '#6366F1',
-    borderRadius: 100,
-    width: 34,
-    height: 34,
+  lawNumber: {
+    backgroundColor: '#f1f5f9',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 15,
   },
-  infoButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  lawNumberText: {
+    color: '#4f46e5',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  lawContent: {
+    flex: 1,
+  },
+  lawTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1e293b',
+    marginBottom: 4,
+  },
+  lawDescription: {
+    fontSize: 14,
+    color: '#64748b',
+    lineHeight: 20,
+  },
+  infoButton: {
+    marginLeft: 10,
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.45)',
@@ -199,50 +319,94 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    width: '92%',
+    width: width * 0.9,
     backgroundColor: '#fff',
     borderRadius: 20,
-    padding: 24,
+    padding: 20,
     maxHeight: '85%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 25,
+    elevation: 20,
   },
-  textScroll: { maxHeight: 300 },
-  modalTitle: { fontSize: 20, fontWeight: '700', color: '#4B49AC', textAlign: 'center', marginBottom: 12 },
-  modalText: { fontSize: 15.5, color: '#3A3A3C', lineHeight: 24, textAlign: 'justify' },
-  modalButtons: {
+  modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 24,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+    paddingBottom: 15,
+    marginBottom: 15,
+  },
+  modalTitle: { 
+    fontSize: 20, 
+    fontWeight: '800', 
+    color: '#4f46e5',
+    flex: 1,
+    paddingRight: 10,
+  },
+  closeIcon: {
+    padding: 5,
+  },
+  textScroll: { 
+    maxHeight: 300,
+    marginVertical: 10,
+  },
+  loadingContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#4f46e5',
+    fontWeight: '600',
+  },
+  modalText: { 
+    fontSize: 15, 
+    color: '#334155', 
+    lineHeight: 24, 
+    textAlign: 'justify' 
+  },
+  modalButtons: {
+    marginTop: 15,
+  },
+  actionButton: {
+    padding: 14,
+    borderRadius: 14,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 10,
   },
   aiButton: {
-    backgroundColor: '#4B49AC',
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    borderRadius: 10,
-    flex: 1,
-    marginRight: 10,
+    backgroundColor: '#4f46e5',
   },
-  closeButton: {
-    backgroundColor: '#6B7280',
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    borderRadius: 10,
-    flex: 1,
+  actionButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
   },
-  buttonText: { color: '#fff', fontSize: 15, fontWeight: '600', textAlign: 'center' },
   utilButtons: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 18,
+    justifyContent: 'space-between',
+    marginTop: 15,
   },
   utilButton: {
-    backgroundColor: '#E5E7EB',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 8,
+    backgroundColor: '#f1f5f9',
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    flex: 1,
+    marginHorizontal: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
   },
   utilButtonText: {
-    color: '#111827',
+    color: '#4f46e5',
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
   },
 });
