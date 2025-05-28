@@ -7,11 +7,8 @@ import {
   SafeAreaView,
   ScrollView,
   Dimensions,
-<<<<<<< HEAD
   Animated,
   Easing
-=======
->>>>>>> 70c22f8a9df6490c45003620bed72c7b7a0023bd
 } from 'react-native';
 import {
   Heart,
@@ -27,16 +24,13 @@ import {
 const { width } = Dimensions.get('window');
 
 const HomeScreen = ({ navigation }) => {
-<<<<<<< HEAD
-  // Animation References
+  // Animation Refs
   const floatAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
-=======
->>>>>>> 70c22f8a9df6490c45003620bed72c7b7a0023bd
   const features = [
-    { 
+    {
       icon: <Phone color="#fff" size={28} />,
       title: 'Emergency Help',
       screen: 'Emergency',
@@ -72,35 +66,34 @@ const HomeScreen = ({ navigation }) => {
       screen: 'PoliceStations',
       color: '#06b6d4'
     },
-<<<<<<< HEAD
-      {
-    icon: <ClipboardList color="#fff" size={28} />,
-    title: 'Abuse Quiz',
-    screen: 'Quiz',
-    color: '#ec4899'
-  }
+    {
+      icon: <ClipboardList color="#fff" size={28} />,
+      title: 'Abuse Quiz',
+      screen: 'Quiz',
+      color: '#ec4899'
+    }
   ];
 
   useEffect(() => {
-    // Floating animation for heart icon
+    // Heart icon floating animation
     Animated.loop(
       Animated.sequence([
         Animated.timing(floatAnim, {
           toValue: 1,
           duration: 1500,
           easing: Easing.linear,
-          useNativeDriver: true
+          useNativeDriver: true,
         }),
         Animated.timing(floatAnim, {
           toValue: 0,
           duration: 1500,
           easing: Easing.linear,
-          useNativeDriver: true
+          useNativeDriver: true,
         })
       ])
     ).start();
 
-    // Fade-in animation for text
+    // Text fade and scale animation
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -119,15 +112,11 @@ const HomeScreen = ({ navigation }) => {
     inputRange: [0, 1],
     outputRange: [-8, 8]
   });
-=======
-  ];
->>>>>>> 70c22f8a9df6490c45003620bed72c7b7a0023bd
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-<<<<<<< HEAD
-        {/* Animated Header Section */}
+        {/* Animated Header */}
         <View style={styles.header}>
           <Animated.View style={[styles.headerIcon, {
             transform: [{ translateY: floatInterpolation }]
@@ -143,7 +132,7 @@ const HomeScreen = ({ navigation }) => {
             <Text style={styles.subtitle}>You are not alone. We're here to help.</Text>
           </Animated.View>
 
-          {/* Animated Background Elements */}
+          {/* Floating Background Bubbles */}
           <View style={styles.bubbleContainer}>
             {[...Array(6)].map((_, i) => (
               <Animated.View
@@ -161,20 +150,8 @@ const HomeScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Quick Exit Button */}
-=======
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerIcon}>
-            <Heart fill="#ef4444" color="#fff" size={32} />
-          </View>
-          <Text style={styles.title}>Hope Connect</Text>
-          <Text style={styles.subtitle}>You are not alone. We're here to help.</Text>
-        </View>
-
         {/* Quick Exit */}
->>>>>>> 70c22f8a9df6490c45003620bed72c7b7a0023bd
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.quickExit}
           onPress={() => navigation.navigate('Exit')}
         >
@@ -210,7 +187,6 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#6C63FF',
-<<<<<<< HEAD
     padding: 32,
     alignItems: 'center',
     borderBottomLeftRadius: 40,
@@ -238,29 +214,6 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 17,
     color: 'rgba(255,255,255,0.95)',
-=======
-    padding: 24,
-    alignItems: 'center',
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    marginBottom: 24,
-  },
-  headerIcon: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#fff',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#e2e8f0',
->>>>>>> 70c22f8a9df6490c45003620bed72c7b7a0023bd
     textAlign: 'center',
     lineHeight: 24,
     marginTop: 6,
@@ -276,20 +229,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 24,
     marginBottom: 24,
     gap: 8,
-<<<<<<< HEAD
     elevation: 3,
-=======
-    elevation: 2,
->>>>>>> 70c22f8a9df6490c45003620bed72c7b7a0023bd
   },
   quickExitText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-<<<<<<< HEAD
     letterSpacing: 0.3,
-=======
->>>>>>> 70c22f8a9df6490c45003620bed72c7b7a0023bd
   },
   grid: {
     flexDirection: 'row',
@@ -299,7 +245,6 @@ const styles = StyleSheet.create({
   },
   card: {
     width: (width - 48) / 2,
-<<<<<<< HEAD
     borderRadius: 20,
     padding: 20,
     aspectRatio: 1,
@@ -311,26 +256,12 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 14,
-=======
-    borderRadius: 16,
-    padding: 20,
-    aspectRatio: 1,
-    justifyContent: 'space-between',
-    elevation: 2,
-  },
-  cardIcon: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    width: 48,
-    height: 48,
-    borderRadius: 12,
->>>>>>> 70c22f8a9df6490c45003620bed72c7b7a0023bd
     justifyContent: 'center',
     alignItems: 'center',
   },
   cardTitle: {
     color: '#fff',
     fontSize: 16,
-<<<<<<< HEAD
     fontWeight: '700',
     lineHeight: 24,
     textShadowColor: 'rgba(0,0,0,0.15)',
@@ -354,11 +285,3 @@ const styles = StyleSheet.create({
 });
 
 export default HomeScreen;
-=======
-    fontWeight: '600',
-    lineHeight: 24,
-  },
-});
-
-export default HomeScreen;
->>>>>>> 70c22f8a9df6490c45003620bed72c7b7a0023bd
