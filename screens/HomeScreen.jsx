@@ -71,7 +71,13 @@ const HomeScreen = ({ navigation }) => {
       title: 'Abuse Quiz',
       screen: 'Quiz',
       color: '#ec4899'
-    }
+    },
+    {
+  icon: <BookOpen color="#fff" size={28} />,
+  title: 'Latest Articles',
+  screen: 'News',
+  color: '#0ea5e9',
+}
   ];
 
   useEffect(() => {

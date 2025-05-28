@@ -13,6 +13,7 @@ import ResourcesScreen from './screens/ResourcesScreen';
 import SafetyPlanScreen from './screens/SafetyPlanScreen';
 import ExitScreen from './screens/ExitScreen';
 import LogIncidentScreen from './screens/LogIncidentScreen';
+import Articles from './screens/Articles'
 
 const Stack = createNativeStackNavigator();
 
@@ -33,6 +34,7 @@ export default function App() {
         <Stack.Screen name="VoiceTrigger" component={VoiceTriggerSetupScreen} />
         <Stack.Screen name="Exit" component={ExitScreen} options={{ headerShown: false }} />
          <Stack.Screen name="Quiz" component={QuizScreen} />
+         <Stack.Screen name="News" component={Articles} />
         <Stack.Screen name="Result" component={QuizResults} />
       </Stack.Navigator>
     </NavigationContainer>
