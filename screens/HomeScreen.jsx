@@ -23,7 +23,8 @@ import {
   DoorOpen,
   LogOut,
   Sun,
-  Moon
+  Moon,
+  Users
 } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
 
@@ -151,7 +152,13 @@ const HomeScreen = ({ navigation }) => {
       title: 'Mental Health',
       screen: 'MentalHealth',
       color: '#14b8a6'
-    }
+    },
+    {
+  icon: <Users color="#fff" size={28} />,
+  title: 'Community Chat',
+  screen: 'CommunityScreen',
+  color: '#6366f1' // you can change this to any Tailwind or HEX color
+}
   ];
 
   const floatInterpolation = floatAnim.interpolate({

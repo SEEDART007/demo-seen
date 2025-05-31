@@ -19,6 +19,10 @@ import QuizResults from './screens/QuizResults';
 import MentalHealthScreen from './screens/MentalHealthScreen';
 import Articles from './screens/Articles';
 
+// Community Chat Screens
+import CommunityScreen from './screens/CommunityScreen';
+import GroupChatScreen from './screens/GroupChat';
+
 // Context
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -64,6 +68,8 @@ export default function App() {
               <Stack.Screen name="Result" component={QuizResults} />
               <Stack.Screen name="MentalHealth" component={MentalHealthScreen} />
               <Stack.Screen name="News" component={Articles} />
+              <Stack.Screen name="CommunityScreen" component={CommunityScreen} />
+              <Stack.Screen name="GroupChatScreen" component={GroupChatScreen} />
             </>
           )}
         </Stack.Navigator>
