@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -8,8 +8,11 @@ import {
   ScrollView,
   Dimensions,
   Animated,
-  Easing
+  Easing,
+  Alert
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import auth from '@react-native-firebase/auth';
 import {
   Heart,
   Phone,
@@ -19,15 +22,72 @@ import {
   Mic,
   MapPin,
   DoorOpen,
+  LogOut
 } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
 
 const HomeScreen = ({ navigation }) => {
-  // Animation Refs
+  const [userName, setUserName] = useState('');
   const floatAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
+
+  // Load user name on component mount
+  useEffect(() => {
+    const loadUserName = async () => {
+      try {
+        const name = await AsyncStorage.getItem('userName');
+        if (name) setUserName(name);
+      } catch (error) {
+        console.error('Failed to load user name:', error);
+      }
+    };
+    
+    loadUserName();
+    
+    // Animation setup
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatAnim, {
+          toValue: 1,
+          duration: 1500,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
+        Animated.timing(floatAnim, {
+          toValue: 0,
+          duration: 1500,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        })
+      ])
+    ).start();
+
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        speed: 12,
+        useNativeDriver: true
+      })
+    ]).start();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await auth().signOut();
+      await AsyncStorage.removeItem('userName'); // Clear user name
+      Alert.alert('Logged out', 'You have been signed out.');
+      navigation.replace('AuthStack'); // Navigate to auth stack
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
+  };
 
   const features = [
     {
@@ -72,54 +132,19 @@ const HomeScreen = ({ navigation }) => {
       screen: 'Quiz',
       color: '#ec4899'
     },
-    
     {
-  icon: <BookOpen color="#fff" size={28} />,
-  title: 'Latest Articles',
-  screen: 'News',
-  color: '#0ea5e9',
-},
-{
-    icon: <Heart color="#fff" size={28} />,
-    title: 'Mental Health',
-    screen: 'MentalHealth',
-    color: '#14b8a6', // Calming teal
-  }
+      icon: <BookOpen color="#fff" size={28} />,
+      title: 'Latest Articles',
+      screen: 'News',
+      color: '#0ea5e9',
+    },
+    {
+      icon: <Heart color="#fff" size={28} />,
+      title: 'Mental Health',
+      screen: 'MentalHealth',
+      color: '#14b8a6'
+    }
   ];
-
-  useEffect(() => {
-    // Heart icon floating animation
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(floatAnim, {
-          toValue: 1,
-          duration: 1500,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        }),
-        Animated.timing(floatAnim, {
-          toValue: 0,
-          duration: 1500,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        })
-      ])
-    ).start();
-
-    // Text fade and scale animation
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 800,
-        useNativeDriver: true
-      }),
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        speed: 12,
-        useNativeDriver: true
-      })
-    ]).start();
-  }, []);
 
   const floatInterpolation = floatAnim.interpolate({
     inputRange: [0, 1],
@@ -131,6 +156,14 @@ const HomeScreen = ({ navigation }) => {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Animated Header */}
         <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.logoutButton} 
+            onPress={handleLogout}
+            activeOpacity={0.7}
+          >
+            <LogOut color="#fff" size={26} />
+          </TouchableOpacity>
+          
           <Animated.View style={[styles.headerIcon, {
             transform: [{ translateY: floatInterpolation }]
           }]}>
@@ -142,6 +175,9 @@ const HomeScreen = ({ navigation }) => {
             transform: [{ scale: scaleAnim }]
           }}>
             <Text style={styles.title}>Hope Connect</Text>
+            <Text style={styles.subtitle}>
+              {userName ? `Welcome back, ${userName}!` : "Welcome!"}
+            </Text>
             <Text style={styles.subtitle}>You are not alone. We're here to help.</Text>
           </Animated.View>
 
@@ -167,6 +203,7 @@ const HomeScreen = ({ navigation }) => {
         <TouchableOpacity
           style={styles.quickExit}
           onPress={() => navigation.navigate('Exit')}
+          activeOpacity={0.8}
         >
           <DoorOpen color="#fff" size={20} />
           <Text style={styles.quickExitText}>Quick Exit</Text>
@@ -179,6 +216,7 @@ const HomeScreen = ({ navigation }) => {
               key={index}
               style={[styles.card, { backgroundColor: feature.color }]}
               onPress={() => navigation.navigate(feature.screen)}
+              activeOpacity={0.8}
             >
               <View style={styles.cardIcon}>{feature.icon}</View>
               <Text style={styles.cardTitle}>{feature.title}</Text>
@@ -206,6 +244,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 40,
     marginBottom: 24,
     overflow: 'hidden',
+    paddingTop: 60, // Added padding for logout button
   },
   headerIcon: {
     backgroundColor: 'rgba(255,255,255,0.2)',
@@ -243,6 +282,10 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     gap: 8,
     elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   quickExitText: {
     color: '#fff',
@@ -255,6 +298,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 16,
     paddingHorizontal: 16,
+    justifyContent: 'center',
   },
   card: {
     width: (width - 48) / 2,
@@ -263,6 +307,10 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     justifyContent: 'space-between',
     elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   cardIcon: {
     backgroundColor: 'rgba(255,255,255,0.2)',
@@ -280,6 +328,15 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0,0,0,0.15)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
+  },
+  logoutButton: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    padding: 10,
+    borderRadius: 30,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    zIndex: 10,
   },
   bubbleContainer: {
     ...StyleSheet.absoluteFillObject,

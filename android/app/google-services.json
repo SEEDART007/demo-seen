@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "748319415118",
+    "project_id": "riseup-real-auth",
+    "storage_bucket": "riseup-real-auth.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:748319415118:android:1b4a3c1a3892a54fee1c1f",
+        "android_client_info": {
+          "package_name": "com.reactprac"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBb7kJ_gLyJQ3127dDoJKTVwxEzadEoHkI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

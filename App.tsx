@@ -1,44 +1,67 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import auth from '@react-native-firebase/auth';
+import { View, ActivityIndicator } from 'react-native';
+
+// Screens
+import PhoneSignin from './screens/PhoneSignin';
+import HomeScreen from './screens/HomeScreen';
+import EmergencyScreen from './screens/EmergencyScreen';
+import ResourcesScreen from './screens/ResourcesScreen';
+import SafetyPlanScreen from './screens/SafetyPlanScreen';
+import ExitScreen from './screens/ExitScreen';
+import LogIncidentScreen from './screens/LogIncidentScreen';
 import PoliceStationsScreen from './screens/PoliceStationScreen';
 import VoiceTriggerSetupScreen from './screens/VoiceTriggerSetupScreen';
 import QuizScreen from './screens/QuizScreen';
 import QuizResults from './screens/QuizResults';
 import MentalHealthScreen from './screens/MentalHealthScreen';
-
-
-import HomeScreen from './screens/HomeScreen'; // make sure this path is correct
-import EmergencyScreen from './screens/EmergencyScreen'; // dummy placeholders
-import ResourcesScreen from './screens/ResourcesScreen';
-import SafetyPlanScreen from './screens/SafetyPlanScreen';
-import ExitScreen from './screens/ExitScreen';
-import LogIncidentScreen from './screens/LogIncidentScreen';
-import Articles from './screens/Articles'
+import Articles from './screens/Articles';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+  const [initializing, setInitializing] = useState(true);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const unsubscribe = auth().onAuthStateChanged(u => {
+      setUser(u);
+      if (initializing) setInitializing(false);
+    });
+    return unsubscribe;
+  }, []);
+
+  if (initializing) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen name="Emergency" component={EmergencyScreen} />
-        <Stack.Screen name="Resources" component={ResourcesScreen} />
-        <Stack.Screen name="SafetyPlan" component={SafetyPlanScreen} />
-        <Stack.Screen name="LogIncident" component={LogIncidentScreen} />
-        <Stack.Screen name="PoliceStations" component={PoliceStationsScreen} />
-        <Stack.Screen name="VoiceTrigger" component={VoiceTriggerSetupScreen} />
-        <Stack.Screen name="Exit" component={ExitScreen} options={{ headerShown: false }} />
-         <Stack.Screen name="Quiz" component={QuizScreen} />
-         <Stack.Screen name="News" component={Articles} />
-        <Stack.Screen name="Result" component={QuizResults} />
-                <Stack.Screen name="MentalHealth" component={MentalHealthScreen} />
-
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {!user ? (
+          <Stack.Screen name="Login" component={PhoneSignin} />
+        ) : (
+          <>
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="Emergency" component={EmergencyScreen} />
+            <Stack.Screen name="Resources" component={ResourcesScreen} />
+            <Stack.Screen name="SafetyPlan" component={SafetyPlanScreen} />
+            <Stack.Screen name="LogIncident" component={LogIncidentScreen} />
+            <Stack.Screen name="PoliceStations" component={PoliceStationsScreen} />
+            <Stack.Screen name="VoiceTrigger" component={VoiceTriggerSetupScreen} />
+            <Stack.Screen name="Exit" component={ExitScreen} />
+            <Stack.Screen name="Quiz" component={QuizScreen} />
+            <Stack.Screen name="Result" component={QuizResults} />
+            <Stack.Screen name="MentalHealth" component={MentalHealthScreen} />
+            <Stack.Screen name="News" component={Articles} />
+          </>
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );
