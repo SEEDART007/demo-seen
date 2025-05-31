@@ -10,14 +10,20 @@ import {
   Linking,
   Image,
   RefreshControl,
-  SafeAreaView
+  SafeAreaView,
+  useColorScheme
 } from 'react-native';
 import axios from 'axios';
+import { useTheme } from '../context/ThemeContext';
 
 const NewsScreen = () => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const { theme } = useTheme();
+  const isDarkMode = theme === 'dark';
+
+  const styles = getStyles(isDarkMode);
 
   useEffect(() => {
     fetchArticles();
@@ -49,9 +55,9 @@ const NewsScreen = () => {
       activeOpacity={0.8}
     >
       {item.urlToImage && (
-        <Image 
-          source={{ uri: item.urlToImage }} 
-          style={styles.articleImage} 
+        <Image
+          source={{ uri: item.urlToImage }}
+          style={styles.articleImage}
           resizeMode="cover"
         />
       )}
@@ -79,7 +85,7 @@ const NewsScreen = () => {
   if (loading) {
     return (
       <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#6C63FF" />
+        <ActivityIndicator size="large" color={isDarkMode ? '#BB86FC' : '#6C63FF'} />
         <Text style={styles.loadingText}>Loading News...</Text>
       </View>
     );
@@ -88,7 +94,7 @@ const NewsScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.header}>Mental Health News</Text>
-      
+
       <FlatList
         data={articles}
         keyExtractor={(item, index) => index.toString()}
@@ -98,7 +104,7 @@ const NewsScreen = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            tintColor="#6C63FF"
+            tintColor={isDarkMode ? '#BB86FC' : '#6C63FF'}
           />
         }
         ListEmptyComponent={
@@ -111,18 +117,17 @@ const NewsScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (isDarkMode) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FE',
+    backgroundColor: isDarkMode ? '#121212' : '#F8F9FE',
   },
   header: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#2A2D3A',
+    color: isDarkMode ? '#FFFFFF' : '#2A2D3A',
     textAlign: 'center',
     marginVertical: 20,
-    fontFamily: 'Helvetica',
     letterSpacing: 0.5,
   },
   list: {
@@ -130,12 +135,12 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   articleContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: isDarkMode ? '#1E1E2F' : '#FFFFFF',
     borderRadius: 16,
     marginBottom: 20,
     overflow: 'hidden',
     elevation: 6,
-    shadowColor: '#6C63FF',
+    shadowColor: isDarkMode ? '#000' : '#6C63FF',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
@@ -152,7 +157,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#2A2D3A',
+    color: isDarkMode ? '#F1F1F1' : '#2A2D3A',
     marginBottom: 12,
     lineHeight: 24,
   },
@@ -166,7 +171,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#6C63FF',
-    backgroundColor: '#F0EDFF',
+    backgroundColor: isDarkMode ? '#2A2D4A' : '#F0EDFF',
     paddingVertical: 3,
     paddingHorizontal: 8,
     borderRadius: 10,
@@ -174,23 +179,23 @@ const styles = StyleSheet.create({
   },
   date: {
     fontSize: 13,
-    color: '#A0A3BD',
+    color: isDarkMode ? '#A1A1AA' : '#A0A3BD',
   },
   description: {
     fontSize: 14,
-    color: '#5C5F70',
+    color: isDarkMode ? '#D4D4D8' : '#5C5F70',
     lineHeight: 20,
   },
   loader: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8F9FE',
+    backgroundColor: isDarkMode ? '#121212' : '#F8F9FE',
   },
   loadingText: {
     marginTop: 15,
     fontSize: 16,
-    color: '#6C63FF',
+    color: isDarkMode ? '#BB86FC' : '#6C63FF',
     fontWeight: '500',
   },
   emptyContainer: {
@@ -201,7 +206,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
-    color: '#A0A3BD',
+    color: isDarkMode ? '#A1A1AA' : '#A0A3BD',
     fontWeight: '500',
   },
 });

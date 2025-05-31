@@ -19,11 +19,14 @@ import QuizResults from './screens/QuizResults';
 import MentalHealthScreen from './screens/MentalHealthScreen';
 import Articles from './screens/Articles';
 
+// Context
+import { ThemeProvider } from './context/ThemeContext';
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   const [initializing, setInitializing] = useState(true);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged(u => {
@@ -42,27 +45,29 @@ export default function App() {
   }
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {!user ? (
-          <Stack.Screen name="Login" component={PhoneSignin} />
-        ) : (
-          <>
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="Emergency" component={EmergencyScreen} />
-            <Stack.Screen name="Resources" component={ResourcesScreen} />
-            <Stack.Screen name="SafetyPlan" component={SafetyPlanScreen} />
-            <Stack.Screen name="LogIncident" component={LogIncidentScreen} />
-            <Stack.Screen name="PoliceStations" component={PoliceStationsScreen} />
-            <Stack.Screen name="VoiceTrigger" component={VoiceTriggerSetupScreen} />
-            <Stack.Screen name="Exit" component={ExitScreen} />
-            <Stack.Screen name="Quiz" component={QuizScreen} />
-            <Stack.Screen name="Result" component={QuizResults} />
-            <Stack.Screen name="MentalHealth" component={MentalHealthScreen} />
-            <Stack.Screen name="News" component={Articles} />
-          </>
-        )}
-      </Stack.Navigator>
-    </NavigationContainer>
+    <ThemeProvider>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          {!user ? (
+            <Stack.Screen name="Login" component={PhoneSignin} />
+          ) : (
+            <>
+              <Stack.Screen name="Home" component={HomeScreen} />
+              <Stack.Screen name="Emergency" component={EmergencyScreen} />
+              <Stack.Screen name="Resources" component={ResourcesScreen} />
+              <Stack.Screen name="SafetyPlan" component={SafetyPlanScreen} />
+              <Stack.Screen name="LogIncident" component={LogIncidentScreen} />
+              <Stack.Screen name="PoliceStations" component={PoliceStationsScreen} />
+              <Stack.Screen name="VoiceTrigger" component={VoiceTriggerSetupScreen} />
+              <Stack.Screen name="Exit" component={ExitScreen} />
+              <Stack.Screen name="Quiz" component={QuizScreen} />
+              <Stack.Screen name="Result" component={QuizResults} />
+              <Stack.Screen name="MentalHealth" component={MentalHealthScreen} />
+              <Stack.Screen name="News" component={Articles} />
+            </>
+          )}
+        </Stack.Navigator>
+      </NavigationContainer>
+    </ThemeProvider>
   );
 }

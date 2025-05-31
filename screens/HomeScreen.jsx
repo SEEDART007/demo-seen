@@ -14,7 +14,6 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
 import {
-  Heart,
   Phone,
   BookOpen,
   Shield,
@@ -22,8 +21,11 @@ import {
   Mic,
   MapPin,
   DoorOpen,
-  LogOut
+  LogOut,
+  Sun,
+  Moon
 } from 'lucide-react-native';
+import { useTheme } from '../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
@@ -32,6 +34,12 @@ const HomeScreen = ({ navigation }) => {
   const floatAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
+  const { theme, toggleTheme } = useTheme();
+  
+  const isDarkMode = theme === 'dark';
+  
+  // Define styles based on theme
+  const styles = getStyles(isDarkMode);
 
   // Load user name on component mount
   useEffect(() => {
@@ -81,9 +89,9 @@ const HomeScreen = ({ navigation }) => {
   const handleLogout = async () => {
     try {
       await auth().signOut();
-      await AsyncStorage.removeItem('userName'); // Clear user name
+      await AsyncStorage.removeItem('userName');
       Alert.alert('Logged out', 'You have been signed out.');
-      navigation.replace('AuthStack'); // Navigate to auth stack
+      navigation.replace('AuthStack');
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -139,7 +147,7 @@ const HomeScreen = ({ navigation }) => {
       color: '#0ea5e9',
     },
     {
-      icon: <Heart color="#fff" size={28} />,
+      icon: <Sun color="#fff" size={28} />,
       title: 'Mental Health',
       screen: 'MentalHealth',
       color: '#14b8a6'
@@ -161,14 +169,23 @@ const HomeScreen = ({ navigation }) => {
             onPress={handleLogout}
             activeOpacity={0.7}
           >
-            <LogOut color="#fff" size={26} />
+            <LogOut color={isDarkMode ? "#fff" : "#6C63FF"} size={26} />
           </TouchableOpacity>
           
-          <Animated.View style={[styles.headerIcon, {
-            transform: [{ translateY: floatInterpolation }]
-          }]}>
-            <Heart fill="#fff" color="#6C63FF" size={36} />
-          </Animated.View>
+          <TouchableOpacity 
+            onPress={toggleTheme}
+            activeOpacity={0.7}
+            style={styles.themeToggle}
+          >
+            <Animated.View style={[styles.headerIcon, {
+              transform: [{ translateY: floatInterpolation }]
+            }]}>
+              {isDarkMode ? 
+                <Sun color="#FFD700" size={36} /> : 
+                <Moon color="#6C63FF" size={36} />
+              }
+            </Animated.View>
+          </TouchableOpacity>
 
           <Animated.View style={{
             opacity: fadeAnim,
@@ -228,26 +245,27 @@ const HomeScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+// Dynamic styles based on theme
+const getStyles = (isDarkMode) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: isDarkMode ? '#121212' : '#f8fafc',
   },
   scrollContainer: {
     paddingBottom: 32,
   },
   header: {
-    backgroundColor: '#6C63FF',
+    backgroundColor: isDarkMode ? '#1a1a2e' : '#6C63FF',
     padding: 32,
     alignItems: 'center',
     borderBottomLeftRadius: 40,
     borderBottomRightRadius: 40,
     marginBottom: 24,
     overflow: 'hidden',
-    paddingTop: 60, // Added padding for logout button
+    paddingTop: 60,
   },
   headerIcon: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.2)',
     padding: 18,
     borderRadius: 20,
     marginBottom: 20,
@@ -335,7 +353,7 @@ const styles = StyleSheet.create({
     right: 20,
     padding: 10,
     borderRadius: 30,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.2)',
     zIndex: 10,
   },
   bubbleContainer: {
@@ -352,6 +370,14 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     marginTop: 20,
   },
+  themeToggle: {
+  // position: 'absolute',
+  // top: '50%',
+  // left: '55%',
+  zIndex: 10,
+  // transform: [{ translateX: '-50%' }, { translateY: '-50%' }]
+ 
+}
 });
 
 export default HomeScreen;
