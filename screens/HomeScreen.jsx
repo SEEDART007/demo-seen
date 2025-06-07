@@ -9,7 +9,7 @@ import {
   Dimensions,
   Animated,
   Easing,
-  Alert
+  Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
@@ -27,7 +27,7 @@ import {
   Users,
   Gavel,
   Leaf,
-  Star
+  Star,
 } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
 
@@ -35,6 +35,7 @@ const { width, height } = Dimensions.get('window');
 
 const HomeScreen = ({ navigation }) => {
   const [userName, setUserName] = useState('');
+  const [dailyQuote, setDailyQuote] = useState({ text: '', author: '' });
   const [headerHeight, setHeaderHeight] = useState(0);
   const floatAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -44,16 +45,31 @@ const HomeScreen = ({ navigation }) => {
   const isDarkMode = theme === 'dark';
   const styles = getStyles(isDarkMode);
   
-  // Array to store animations
   const leafAnimations = useRef([]);
   const starAnimations = useRef([]);
   
-  // Load user name on component mount
+  // Load user name and random quote on mount
   useEffect(() => {
     const loadUserName = async () => {
       try {
         const name = await AsyncStorage.getItem('userName');
         if (name) setUserName(name);
+        const quotes = [
+          { 
+            text: "You are stronger than you know. Braver than you believe.", 
+            author: "Anonymous" 
+          },
+          { 
+            text: "Every step forward is a victory. Celebrate your courage.", 
+            author: "Survivor Wisdom" 
+          },
+          { 
+            text: "Your story isn't over yet. The best chapters are still unwritten.", 
+            author: "Hope Connect" 
+          }
+        ];
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        setDailyQuote(randomQuote);
       } catch (error) {
         console.error('Failed to load user name:', error);
       }
@@ -61,7 +77,7 @@ const HomeScreen = ({ navigation }) => {
     
     loadUserName();
     
-    // Floating animation
+    // Floating animation for theme icon
     Animated.loop(
       Animated.sequence([
         Animated.timing(floatAnim, {
@@ -79,7 +95,7 @@ const HomeScreen = ({ navigation }) => {
       ])
     ).start();
 
-    // Fade and scale animation
+    // Fade-in and scale animation for text
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -94,7 +110,7 @@ const HomeScreen = ({ navigation }) => {
     ]).start();
   }, []);
 
-  // Start animations when header height is available
+  // Start leaf and star animations when header height is known
   useEffect(() => {
     if (headerHeight > 0) {
       startLeafAnimations();
@@ -113,22 +129,20 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-  // Create and start leaf animations
+  // Create falling leaf animations
   const startLeafAnimations = () => {
-    leafAnimations.current = Array(20).fill().map((_, index) => {
+    leafAnimations.current = Array(15).fill().map((_, index) => {
       const translateY = new Animated.Value(-30);
       const translateX = new Animated.Value(0);
       const rotate = new Animated.Value(0);
       
-      // Random properties
-      const duration = 8000 + Math.random() * 7000;
+      const duration = 8000 + Math.random() * 6000;
       const startLeft = Math.random() * width;
-      const drift = (Math.random() - 0.5) * 150;
+      const drift = (Math.random() - 0.5) * 100;
       const rotation = Math.random() * 360;
-      const size = 12 + Math.random() * 18;
-      const opacity = 0.4 + Math.random() * 0.5;
+      const size = 12 + Math.random() * 14;
+      const opacity = 0.4 + Math.random() * 0.4;
       
-      // Start animation
       Animated.loop(
         Animated.parallel([
           Animated.timing(translateY, {
@@ -171,20 +185,18 @@ const HomeScreen = ({ navigation }) => {
     });
   };
 
-  // Create and start star animations
+  // Create twinkling star animations
   const startStarAnimations = () => {
-    starAnimations.current = Array(15).fill().map((_, index) => {
+    starAnimations.current = Array(12).fill().map((_, index) => {
       const opacity = new Animated.Value(0.2);
       const scale = new Animated.Value(1);
       
-      // Random properties
-      const duration = 2000 + Math.random() * 3000;
-      const delay = Math.random() * 2000;
+      const duration = 2000 + Math.random() * 2500;
+      const delay = Math.random() * 1500;
       const startLeft = Math.random() * width;
-      const startTop = 30 + Math.random() * (headerHeight / 2);
-      const starSize = 1 + Math.random() * 3;
+      const startTop = 20 + Math.random() * (headerHeight / 2);
+      const starSize = 1 + Math.random() * 2.5;
       
-      // Start animation
       Animated.loop(
         Animated.sequence([
           Animated.delay(delay),
@@ -195,7 +207,7 @@ const HomeScreen = ({ navigation }) => {
               useNativeDriver: true,
             }),
             Animated.timing(scale, {
-              toValue: 1.3,
+              toValue: 1.2,
               duration: duration / 2,
               useNativeDriver: true,
             })
@@ -226,89 +238,32 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const features = [
-    {
-      icon: <Phone color="#fff" size={28} />,
-      title: 'Emergency Help',
-      screen: 'Emergency',
-      color: '#ef4444'
-    },
-    {
-      icon: <BookOpen color="#fff" size={28} />,
-      title: 'Resources',
-      screen: 'Resources',
-      color: '#3b82f6'
-    },
-    {
-      icon: <Shield color="#fff" size={28} />,
-      title: 'Safety Plan',
-      screen: 'SafetyPlan',
-      color: '#10b981'
-    },
-    {
-      icon: <ClipboardList color="#fff" size={28} />,
-      title: 'Log Incident',
-      screen: 'LogIncident',
-      color: '#f59e0b'
-    },
-    {
-      icon: <Mic color="#fff" size={28} />,
-      title: 'Voice Trigger',
-      screen: 'VoiceTrigger',
-      color: '#8b5cf6'
-    },
-    {
-      icon: <MapPin color="#fff" size={28} />,
-      title: 'Police Stations',
-      screen: 'PoliceStations',
-      color: '#06b6d4'
-    },
-    {
-      icon: <ClipboardList color="#fff" size={28} />,
-      title: 'Abuse Quiz',
-      screen: 'Quiz',
-      color: '#ec4899'
-    },
-    {
-      icon: <BookOpen color="#fff" size={28} />,
-      title: 'Latest Articles',
-      screen: 'News',
-      color: '#0ea5e9',
-    },
-    {
-      icon: <Sun color="#fff" size={28} />,
-      title: 'Mental Health',
-      screen: 'MentalHealth',
-      color: '#14b8a6'
-    },
-    {
-      icon: <Users color="#fff" size={28} />,
-      title: 'Community Chat',
-      screen: 'CommunityScreen',
-      color: '#6366f1'
-    },
-    {
-      icon: <Gavel color="#fff" size={28} />,
-      title: 'Legal Paperwork',
-      screen: 'Legal',
-      color: '#7e22ce'
-    }
+    { icon: <Phone color="#fff" size={28} />, title: 'Emergency Help', screen: 'Emergency', color: '#ef4444' },
+    { icon: <BookOpen color="#fff" size={28} />, title: 'Resources', screen: 'Resources', color: '#3b82f6' },
+    { icon: <Shield color="#fff" size={28} />, title: 'Safety Plan', screen: 'SafetyPlan', color: '#10b981' },
+    { icon: <ClipboardList color="#fff" size={28} />, title: 'Log Incident', screen: 'LogIncident', color: '#f59e0b' },
+    { icon: <Mic color="#fff" size={28} />, title: 'Voice Trigger', screen: 'VoiceTrigger', color: '#8b5cf6' },
+    { icon: <MapPin color="#fff" size={28} />, title: 'Police Stations', screen: 'PoliceStations', color: '#06b6d4' },
+    { icon: <ClipboardList color="#fff" size={28} />, title: 'Abuse Quiz', screen: 'Quiz', color: '#ec4899' },
+    { icon: <BookOpen color="#fff" size={28} />, title: 'Latest Articles', screen: 'News', color: '#0ea5e9' },
+    { icon: <Sun color="#fff" size={28} />, title: 'Mental Health', screen: 'MentalHealth', color: '#14b8a6' },
+    { icon: <Users color="#fff" size={28} />, title: 'Community Chat', screen: 'CommunityScreen', color: '#6366f1' },
+    { icon: <Gavel color="#fff" size={28} />, title: 'Legal Paperwork', screen: 'Legal', color: '#7e22ce' },
+    { icon: <BookOpen color="#fff" size={28} />, title: 'Imp Websites', screen: 'Websites', color: '#0ea5e9' },
   ];
 
   const floatInterpolation = floatAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [-8, 8]
+    outputRange: [-6, 6]
   });
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* Nature-inspired Header */}
+        {/* Header Section */}
         <View 
           style={styles.header}
-          onLayout={(event) => {
-            const { height } = event.nativeEvent.layout;
-            setHeaderHeight(height);
-          }}
+          onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)}
         >
           {/* Stars */}
           {isDarkMode && starAnimations.current.map((star, index) => (
@@ -356,22 +311,16 @@ const HomeScreen = ({ navigation }) => {
             </Animated.View>
           ))}
 
-          {/* Hill Silhouettes */}
-          <View style={styles.hillContainer}>
-            <View style={[styles.hill, styles.hill1]} />
-            <View style={[styles.hill, styles.hill2]} />
-            <View style={[styles.hill, styles.hill3]} />
-          </View>
-
-          {/* Header content */}
+          {/* Logout Button */}
           <TouchableOpacity 
             style={styles.logoutButton} 
             onPress={handleLogout}
             activeOpacity={0.7}
           >
-            <LogOut color={isDarkMode ? "#fff" : "#5D3FD3"} size={26} />
+            <LogOut color={isDarkMode ? "#fff" : "#5D3FD3"} size={24} />
           </TouchableOpacity>
           
+          {/* Theme Toggle */}
           <TouchableOpacity 
             onPress={toggleTheme}
             activeOpacity={0.7}
@@ -381,27 +330,31 @@ const HomeScreen = ({ navigation }) => {
               transform: [{ translateY: floatInterpolation }]
             }]}>
               {isDarkMode ? 
-                <Sun color="#FFD700" size={36} /> : 
-                <Moon color="#5D3FD3" size={36} />
+                <Sun color="#FFD700" size={32} /> : 
+                <Moon color="#5D3FD3" size={32} />
               }
             </Animated.View>
           </TouchableOpacity>
 
+          {/* App Title and Welcome Text */}
           <Animated.View style={{
             opacity: fadeAnim,
             transform: [{ scale: scaleAnim }],
-            zIndex: 20
+            alignItems: 'center',
+            marginTop: 10,
           }}>
             <Text style={styles.title}>Hope Connect</Text>
             <Text style={styles.subtitle}>
               {userName ? `Welcome back, ${userName}!` : "Welcome!"}
             </Text>
-            <Text style={styles.subtitle}>You are not alone. We're here to help.</Text>
+            <Text style={[styles.subtitle, { fontSize: 15, marginTop: 4 }]}>
+              You are not alone. We're here to help.
+            </Text>
           </Animated.View>
 
           {/* Floating Background Bubbles */}
           <View style={styles.bubbleContainer}>
-            {[...Array(8)].map((_, i) => (
+            {[...Array(6)].map((_, i) => (
               <Animated.View
                 key={i}
                 style={[styles.bubble, {
@@ -411,10 +364,17 @@ const HomeScreen = ({ navigation }) => {
                       outputRange: ['0deg', `${i % 2 ? 45 : -45}deg`]
                     })
                   }]
-                }]}
-              />
+                }]}>
+                <View style={styles.innerBubble} />
+              </Animated.View>
             ))}
           </View>
+        </View>
+
+        {/* Daily Quote */}
+        <View style={styles.quoteContainer}>
+          <Text style={styles.quoteText}>"{dailyQuote.text}"</Text>
+          <Text style={styles.quoteAuthor}>– {dailyQuote.author}</Text>
         </View>
 
         {/* Quick Exit */}
@@ -423,7 +383,7 @@ const HomeScreen = ({ navigation }) => {
           onPress={() => navigation.navigate('Exit')}
           activeOpacity={0.8}
         >
-          <DoorOpen color="#fff" size={20} />
+          <DoorOpen color="#fff" size={22} />
           <Text style={styles.quickExitText}>Quick Exit</Text>
         </TouchableOpacity>
 
@@ -446,17 +406,16 @@ const HomeScreen = ({ navigation }) => {
   );
 };
 
-// Dynamic styles based on theme
 const getStyles = (isDarkMode) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: isDarkMode ? '#121212' : '#f8fafc',
+    backgroundColor: isDarkMode ? '#121212' : '#f0f4f7',
   },
   scrollContainer: {
     paddingBottom: 32,
   },
   header: {
-    backgroundColor: isDarkMode ? '#1a1a2e' : '#5D3FD3',
+    backgroundColor: isDarkMode ? '#1a1a2e' : '#6c63ff',
     padding: 32,
     alignItems: 'center',
     borderBottomLeftRadius: 40,
@@ -469,27 +428,27 @@ const getStyles = (isDarkMode) => StyleSheet.create({
   headerIcon: {
     backgroundColor: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.2)',
     padding: 18,
-    borderRadius: 20,
+    borderRadius: 22,
     marginBottom: 20,
   },
   title: {
-    fontSize: 34,
+    fontSize: 36,
     fontWeight: '900',
     color: '#fff',
     marginBottom: 8,
-    letterSpacing: 0.8,
+    letterSpacing: 0.5,
     textAlign: 'center',
     textShadowColor: 'rgba(0,0,0,0.2)',
     textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 3,
-    zIndex: 10,
+    textShadowRadius: 4,
+    marginTop: 10,
   },
   subtitle: {
     fontSize: 17,
     color: 'rgba(255,255,255,0.95)',
     textAlign: 'center',
     lineHeight: 24,
-    marginTop: 6,
+    marginTop: 4,
     fontStyle: 'italic',
     zIndex: 10,
   },
@@ -498,16 +457,16 @@ const getStyles = (isDarkMode) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
-    borderRadius: 12,
-    marginHorizontal: 24,
+    padding: 14,
+    borderRadius: 30,
+    marginHorizontal: 36,
     marginBottom: 24,
     gap: 8,
-    elevation: 3,
+    elevation: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
   },
   quickExitText: {
     color: '#fff',
@@ -518,24 +477,25 @@ const getStyles = (isDarkMode) => StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 16,
+    gap: 20,
     paddingHorizontal: 16,
     justifyContent: 'center',
   },
   card: {
-    width: (width - 48) / 2,
+    width: (width - 64) / 2,
     borderRadius: 20,
-    padding: 20,
+    padding: 24,
     aspectRatio: 1,
     justifyContent: 'space-between',
-    elevation: 3,
+    elevation: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    marginBottom: 16,
   },
   cardIcon: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(255,255,255,0.3)',
     width: 50,
     height: 50,
     borderRadius: 14,
@@ -544,7 +504,7 @@ const getStyles = (isDarkMode) => StyleSheet.create({
   },
   cardTitle: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '700',
     lineHeight: 24,
     textShadowColor: 'rgba(0,0,0,0.15)',
@@ -553,71 +513,68 @@ const getStyles = (isDarkMode) => StyleSheet.create({
   },
   logoutButton: {
     position: 'absolute',
-    top: 20,
-    right: 20,
+    top: 22,
+    right: 22,
     padding: 10,
     borderRadius: 30,
-    backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.25)',
     zIndex: 30,
   },
   bubbleContainer: {
     ...StyleSheet.absoluteFillObject,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     paddingHorizontal: 30,
     opacity: 0.2,
     zIndex: 1,
   },
   bubble: {
-    width: 12,
-    height: 12,
-    backgroundColor: isDarkMode ? 'rgba(192, 132, 252, 0.4)' : 'rgba(255,255,255,0.4)',
-    borderRadius: 6,
+    width: 16,
+    height: 16,
+    backgroundColor: isDarkMode ? 'rgba(192, 132, 252, 0.5)' : 'rgba(255,255,255,0.5)',
+    borderRadius: 8,
     marginTop: 20,
+  },
+  innerBubble: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    opacity: 0.2,
   },
   themeToggle: {
     zIndex: 30,
   },
-  // Leaf styles
   leaf: {
     position: 'absolute',
     top: -30,
     zIndex: 2,
   },
-  // Hill styles
-  hillContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 60,
-    zIndex: 5,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  quoteContainer: {
+    backgroundColor: isDarkMode ? '#252525' : '#fff',
+    borderRadius: 16,
+    padding: 20,
+    marginHorizontal: 24,
+    marginBottom: 24,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
   },
-  // hill: {
-  //   position: 'absolute',
-  //   bottom: 0,
-  //   backgroundColor: isDarkMode ? '#0f172a' : '#365314',
-  //   borderTopLeftRadius: 30,
-  //   borderTopRightRadius: 30,
-  // },
-  // hill1: {
-  //   width: width * 0.5,
-  //   height: 50,
-  //   left: -width * 0.1,
-  // },
-  // hill2: {
-  //   width: width * 0.4,
-  //   height: 40,
-  //   left: width * 0.3,
-  // },
-  // hill3: {
-  //   width: width * 0.6,
-  //   height: 45,
-  //   right: -width * 0.1,
-  // },
-  // Star styles
+  quoteText: {
+    fontSize: 18,
+    color: isDarkMode ? '#e0e0e0' : '#333',
+    fontStyle: 'italic',
+    lineHeight: 26,
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  quoteAuthor: {
+    fontSize: 16,
+    color: isDarkMode ? '#aaa' : '#666',
+    textAlign: 'right',
+    fontStyle: 'italic',
+  },
   star: {
     position: 'absolute',
     backgroundColor: '#fff',
