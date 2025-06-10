@@ -20,6 +20,7 @@ import {
   ClipboardList,
   Mic,
   MapPin,
+  SquareActivity,
   DoorOpen,
   LogOut,
   Sun,
@@ -248,8 +249,13 @@ const HomeScreen = ({ navigation }) => {
     { icon: <BookOpen color="#fff" size={28} />, title: 'Latest Articles', screen: 'News', color: '#0ea5e9' },
     { icon: <Sun color="#fff" size={28} />, title: 'Mental Health', screen: 'MentalHealth', color: '#14b8a6' },
     { icon: <Users color="#fff" size={28} />, title: 'Community Chat', screen: 'CommunityScreen', color: '#6366f1' },
-    { icon: <Gavel color="#fff" size={28} />, title: 'Legal Paperwork', screen: 'Legal', color: '#7e22ce' },
     { icon: <BookOpen color="#fff" size={28} />, title: 'Imp Websites', screen: 'Websites', color: '#0ea5e9' },
+    {
+  icon: <SquareActivity color="#fff" size={28} />,
+  title: 'Live Aggression Detection',
+  screen: 'LiveAggressionDetection',
+  color: '#ef4444'
+}
   ];
 
   const floatInterpolation = floatAnim.interpolate({

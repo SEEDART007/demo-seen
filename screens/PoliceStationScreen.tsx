@@ -4,7 +4,7 @@ import MapView, { Marker } from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
 import axios from 'axios';
 
-const GOOGLE_MAPS_API_KEY = 'AIzaSyC0erQrMeHOQsm8u2Frvd9UM8PtfC57e6w'; // Replace this with your real key
+const GOOGLE_MAPS_API_KEY = 'AIzaSyBeyCPhlSIIBDCeX7dnLVxviz0whYVvSVM'; // Replace this with your real key
 
 const PoliceStationScreen = () => {
   const [region, setRegion] = useState(null);

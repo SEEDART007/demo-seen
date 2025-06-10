@@ -20,6 +20,7 @@ import MentalHealthScreen from './screens/MentalHealthScreen';
 import Articles from './screens/Articles';
 import LegalScreen from './screens/LegalScreen'; // Add LegalScreen import
 import ImpWebScreen from './screens/ImpWebScreen'
+import LiveAgressionDetection from './screens/LiveAgressionDetection';
 
 // Community Chat Screens
 import CommunityScreen from './screens/CommunityScreen';
@@ -73,6 +74,11 @@ export default function App() {
               <Stack.Screen name="CommunityScreen" component={CommunityScreen} />
               <Stack.Screen name="GroupChatScreen" component={GroupChatScreen} />
               <Stack.Screen name="Websites" component={ImpWebScreen} />
+                 <Stack.Screen 
+          name="LiveAggressionDetection" 
+          component={LiveAgressionDetection} 
+          options={{ title: 'Live Aggression Detection' }} 
+        />
               {/* Add LegalScreen to navigation stack */}
               <Stack.Screen name="Legal" component={LegalScreen} />
             </>

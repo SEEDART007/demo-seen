@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions, Image } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Animated,
+  Dimensions,
+  ScrollView,
+  SafeAreaView,
+} from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -8,62 +17,60 @@ export default function ResultScreen({ route, navigation }) {
   const [scaleAnim] = useState(new Animated.Value(0.8));
   const [fadeAnim] = useState(new Animated.Value(0));
   const [scoreDisplay, setScoreDisplay] = useState(0);
-  
-  // Result categories
-  const resultCategory = score <= 4 ? "low" : score <= 8 ? "medium" : "high";
-  
-  // Colors based on result
+
+  const resultCategory = score <= 4 ? 'low' : score <= 8 ? 'medium' : 'high';
+
   const colorSchemes = {
     low: {
       primary: '#10b981',
       secondary: '#d1fae5',
-      bg: '#ecfdf5'
+      bg: '#ecfdf5',
     },
     medium: {
       primary: '#f59e0b',
       secondary: '#fef3c7',
-      bg: '#fffbeb'
+      bg: '#fffbeb',
     },
     high: {
       primary: '#ef4444',
       secondary: '#fee2e2',
-      bg: '#fef2f2'
-    }
+      bg: '#fef2f2',
+    },
   };
 
   const colors = colorSchemes[resultCategory];
 
-  // Result messages
   const getResultMessage = () => {
     if (score <= 4) {
       return {
-        title: "Your Relationship Appears Healthy",
-        message: "Based on your responses, your relationship shows signs of mutual respect and healthy boundaries. Continue to nurture open communication and trust.",
-        action: "Keep building a healthy partnership",
-        icon: "✅"
+        title: 'Your Relationship Appears Healthy',
+        message:
+          'Based on your responses, your relationship shows signs of mutual respect and healthy boundaries. Continue to nurture open communication and trust.',
+        action: 'Keep building a healthy partnership',
+        icon: '✅',
       };
     } else if (score <= 8) {
       return {
-        title: "Some Concerns Detected",
-        message: "Your responses indicate some concerning behaviors in your relationship. These may be signs of emotional manipulation or controlling behavior that could escalate.",
-        action: "Consider seeking relationship counseling",
-        icon: "⚠️"
+        title: 'Some Concerns Detected',
+        message:
+          'Your responses indicate some concerning behaviors in your relationship. These may be signs of emotional manipulation or controlling behavior that could escalate.',
+        action: 'Consider seeking relationship counseling',
+        icon: '⚠️',
       };
     } else {
       return {
-        title: "Potential Abuse Detected",
-        message: "Your responses suggest patterns consistent with abusive relationships. Your safety is paramount. Abuse is never acceptable and never your fault.",
-        action: "Reach out for help immediately",
-        icon: "❗"
+        title: 'Potential Abuse Detected',
+        message:
+          'Your responses suggest patterns consistent with abusive relationships. Your safety is paramount. Abuse is never acceptable and never your fault.',
+        action: 'Reach out for help immediately',
+        icon: '❗',
       };
     }
   };
 
   const result = getResultMessage();
 
-  // Animation effects
   useEffect(() => {
-    // Score counting animation
     let currentScore = 0;
     const increment = score > 20 ? 3 : 1;
     const timer = setInterval(() => {
@@ -75,14 +82,12 @@ export default function ResultScreen({ route, navigation }) {
       setScoreDisplay(currentScore);
     }, 50);
 
-    // Scale animation
     Animated.spring(scaleAnim, {
       toValue: 1,
       friction: 4,
       useNativeDriver: true,
     }).start();
 
-    // Fade animation
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 800,
@@ -92,96 +97,92 @@ export default function ResultScreen({ route, navigation }) {
     return () => clearInterval(timer);
   }, []);
 
-  // Render decorative elements
-  const renderDecorations = () => {
-    return (
-      <>
-        <View style={[styles.circle, styles.circle1, { backgroundColor: colors.primary + '20' }]} />
-        <View style={[styles.circle, styles.circle2, { backgroundColor: colors.primary + '15' }]} />
-        <View style={[styles.circle, styles.circle3, { backgroundColor: colors.primary + '10' }]} />
-      </>
-    );
-  };
+  const renderDecorations = () => (
+    <>
+      <View
+        style={[styles.circle, styles.circle1, { backgroundColor: colors.primary + '20' }]}
+      />
+      <View
+        style={[styles.circle, styles.circle2, { backgroundColor: colors.primary + '15' }]}
+      />
+      <View
+        style={[styles.circle, styles.circle3, { backgroundColor: colors.primary + '10' }]}
+      />
+    </>
+  );
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.bg }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
       {renderDecorations()}
-      
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Assessment Complete</Text>
-        <Text style={styles.headerSubtitle}>Your Relationship Safety Report</Text>
-      </View>
-      
-      <Animated.View style={[
-        styles.card, 
-        { 
-          backgroundColor: colors.secondary,
-          transform: [{ scale: scaleAnim }],
-          opacity: fadeAnim
-        }
-      ]}>
-        <View style={styles.scoreContainer}>
-          <Text style={styles.scoreLabel}>Your Score</Text>
-          <Text style={[styles.scoreValue, { color: colors.primary }]}>{scoreDisplay}</Text>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Assessment Complete</Text>
+          <Text style={styles.headerSubtitle}>Your Relationship Safety Report</Text>
         </View>
-        
-        <View style={styles.resultHeader}>
-          <Text style={styles.resultIcon}>{result.icon}</Text>
-          <Text style={[styles.resultTitle, { color: colors.primary }]}>{result.title}</Text>
-        </View>
-        
-        <Text style={styles.resultMessage}>{result.message}</Text>
-        
-        <View style={styles.actionContainer}>
-          <Text style={styles.actionText}>{result.action}</Text>
-        </View>
-      </Animated.View>
-      
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={[styles.button, { backgroundColor: colors.primary }]}
-          onPress={() => navigation.navigate('Quiz')}
+
+        <Animated.View
+          style={[
+            styles.card,
+            {
+              backgroundColor: colors.secondary,
+              transform: [{ scale: scaleAnim }],
+              opacity: fadeAnim,
+            },
+          ]}
         >
-          <Text style={styles.buttonText}>Retake Assessment</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.secondaryButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={[styles.secondaryButtonText, { color: colors.primary }]}>Back to Home</Text>
-        </TouchableOpacity>
-      </View>
+          <View style={styles.scoreContainer}>
+            <Text style={styles.scoreLabel}>Your Score</Text>
+            <Text style={[styles.scoreValue, { color: colors.primary }]}>{scoreDisplay}</Text>
+          </View>
+
+          <View style={styles.resultHeader}>
+            <Text style={styles.resultIcon}>{result.icon}</Text>
+            <Text style={[styles.resultTitle, { color: colors.primary }]}>{result.title}</Text>
+          </View>
+
+          <Text style={styles.resultMessage}>{result.message}</Text>
+
+          <View style={[styles.actionContainer, { borderLeftColor: colors.primary }]}>
+            <Text style={styles.actionText}>{result.action}</Text>
+          </View>
+        </Animated.View>
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: colors.primary }]}
+            onPress={() => navigation.navigate('Quiz')}
+          >
+            <Text style={styles.buttonText}>Retake Assessment</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.goBack()}>
+            <Text style={[styles.secondaryButtonText, { color: colors.primary }]}>
+              Back to Home
+            </Text>
+          </TouchableOpacity>
+        </View>
+
       
-      <View style={styles.resourcesContainer}>
-        <Text style={styles.resourcesTitle}>Support Resources</Text>
-        <View style={styles.resourceItem}>
-          <Text style={styles.resourceName}>National Domestic Violence Hotline:</Text>
-          <Text style={styles.resourceValue}>1-800-799-7233</Text>
-        </View>
-        <View style={styles.resourceItem}>
-          <Text style={styles.resourceName}>Crisis Text Line:</Text>
-          <Text style={styles.resourceValue}>Text HOME to 741741</Text>
-        </View>
-        <View style={styles.resourceItem}>
-          <Text style={styles.resourceName}>RAINN (Sexual Assault):</Text>
-          <Text style={styles.resourceValue}>1-800-656-4673</Text>
-        </View>
-      </View>
-      
-      <Text style={styles.disclaimer}>
-        This assessment is not a professional diagnosis. If you're in danger or need help, please contact a trusted organization or helpline.
-      </Text>
-    </View>
+
+        <Text style={styles.disclaimer}>
+          This assessment is not a professional diagnosis. If you're in danger or need help,
+          please contact a trusted organization or helpline.
+        </Text>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollContent: {
     padding: 25,
-    paddingTop: 40,
-    justifyContent: 'space-between',
+    paddingBottom: 50,
   },
   circle: {
     position: 'absolute',
@@ -274,7 +275,6 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     padding: 15,
     borderLeftWidth: 4,
-    borderLeftColor: '#10b981',
   },
   actionText: {
     fontSize: 16,
@@ -348,6 +348,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '500',
     paddingHorizontal: 10,
-    marginBottom: 10,
+    marginBottom: 30,
   },
 });

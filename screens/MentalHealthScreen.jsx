@@ -41,39 +41,51 @@ const MentalHealthScreen = () => {
     }, 3000);
   };
 
-  const sendMessageToAI = async () => {
-    if (!chatInput.trim()) return;
+ const sendMessageToAI = async () => {
+  if (!chatInput.trim()) return;
 
-    const userMessage = { from: 'user', text: chatInput };
-    setChatMessages((prev) => [...prev, userMessage]);
-    setChatInput('');
-    setLoadingResponse(true);
+  const userMessage = { from: 'user', text: chatInput };
+  setChatMessages((prev) => [...prev, userMessage]);
+  setChatInput('');
+  setLoadingResponse(true);
 
-    try {
-      const response = await fetch('https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium', {
-        method: 'POST',
-        headers: {
-          Authorization: 'Bearer {}',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          inputs: {
-            text: chatInput,
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer AIzaSyDwQzrc8evt9uW5dVr99R0qtKSUP30ylXA',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4', // or 'gpt-3.5-turbo' if GPT-4 access is unavailable
+        messages: [
+          ...chatMessages
+            .filter((msg) => msg.from === 'user' || msg.from === 'bot')
+            .map((msg) => ({
+              role: msg.from === 'user' ? 'user' : 'assistant',
+              content: msg.text,
+            })),
+          {
+            role: 'user',
+            content: chatInput,
           },
-        }),
-      });
+        ],
+        temperature: 0.7,
+      }),
+    });
 
-      const data = await response.json();
-      const aiReply = data?.generated_text || "I'm here to listen. Can you tell me more?";
-      const botMessage = { from: 'bot', text: aiReply };
-      setChatMessages((prev) => [...prev, botMessage]);
-    } catch (error) {
-      const errorMessage = { from: 'bot', text: 'Sorry, I had trouble responding. Please try again later.' };
-      setChatMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setLoadingResponse(false);
-    }
-  };
+    const data = await response.json();
+    const aiReply = data?.choices?.[0]?.message?.content?.trim() || "I'm here to listen. Can you tell me more?";
+    const botMessage = { from: 'bot', text: aiReply };
+    setChatMessages((prev) => [...prev, botMessage]);
+  } catch (error) {
+    const errorMessage = { from: 'bot', text: 'Sorry, I had trouble responding. Please try again later.' };
+    setChatMessages((prev) => [...prev, errorMessage]);
+  } finally {
+    setLoadingResponse(false);
+  }
+};
+
 
   const renderArticle = ({ item }) => (
     <View style={styles.articleCard}>

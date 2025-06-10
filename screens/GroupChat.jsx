@@ -11,15 +11,33 @@ import {
 } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const GroupChatScreen = ({ route, navigation }) => {
   const { groupId, groupName } = route.params;
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
+  const [userName, setUserName] = useState('');
 
   useLayoutEffect(() => {
     navigation.setOptions({ title: groupName });
   }, [navigation, groupName]);
+
+  useEffect(() => {
+    // Load userName from local storage
+    const fetchUserName = async () => {
+      try {
+        const storedName = await AsyncStorage.getItem('userName');
+        if (storedName) {
+          setUserName(storedName);
+        }
+      } catch (error) {
+        console.error('Failed to load userName from storage', error);
+      }
+    };
+
+    fetchUserName();
+  }, []);
 
   useEffect(() => {
     const unsubscribe = firestore()
@@ -50,7 +68,7 @@ const GroupChatScreen = ({ route, navigation }) => {
         .collection('messages')
         .add({
           text: message,
-          sender: currentUser ? currentUser.email : 'Anonymous',
+          sender: userName || (currentUser ? currentUser.email : 'Anonymous'),
           createdAt: firestore.FieldValue.serverTimestamp(),
         });
       setMessage('');
