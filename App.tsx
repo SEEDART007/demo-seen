@@ -28,6 +28,7 @@ import GroupChatScreen from './screens/GroupChat';
 
 // Context
 import { ThemeProvider } from './context/ThemeContext';
+import LegalAdvisor from './screens/LegalAdvisor';
 
 const Stack = createNativeStackNavigator();
 
@@ -73,6 +74,7 @@ export default function App() {
               <Stack.Screen name="News" component={Articles} />
               <Stack.Screen name="CommunityScreen" component={CommunityScreen} />
               <Stack.Screen name="GroupChatScreen" component={GroupChatScreen} />
+              <Stack.Screen name="LegalAdvisor" component={LegalAdvisor} />
               <Stack.Screen name="Websites" component={ImpWebScreen} />
                  <Stack.Screen 
           name="LiveAggressionDetection" 

@@ -28,6 +28,7 @@ import {
   Users,
   Gavel,
   Leaf,
+  ScaleIcon,
   Star,
 } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
@@ -250,11 +251,12 @@ const HomeScreen = ({ navigation }) => {
     { icon: <Sun color="#fff" size={28} />, title: 'Mental Health', screen: 'MentalHealth', color: '#14b8a6' },
     { icon: <Users color="#fff" size={28} />, title: 'Community Chat', screen: 'CommunityScreen', color: '#6366f1' },
     { icon: <BookOpen color="#fff" size={28} />, title: 'Imp Websites', screen: 'Websites', color: '#0ea5e9' },
-    {
-  icon: <SquareActivity color="#fff" size={28} />,
-  title: 'Live Aggression Detection',
-  screen: 'LiveAggressionDetection',
-  color: '#ef4444'
+ 
+{
+  icon: <ScaleIcon color="#fff" size={28} />,
+  title: 'AI Legal Advisor',
+  screen: 'LegalAdvisor',
+  color: '#6366f1' // Indigo shade
 }
   ];
 
