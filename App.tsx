@@ -21,7 +21,7 @@ import Articles from './screens/Articles';
 import LegalScreen from './screens/LegalScreen'; // Add LegalScreen import
 import ImpWebScreen from './screens/ImpWebScreen'
 import LiveAgressionDetection from './screens/LiveAgressionDetection';
-
+import ProfileScreen from './screens/Profile';
 // Community Chat Screens
 import CommunityScreen from './screens/CommunityScreen';
 import GroupChatScreen from './screens/GroupChat';
@@ -83,6 +83,11 @@ export default function App() {
         />
               {/* Add LegalScreen to navigation stack */}
               <Stack.Screen name="Legal" component={LegalScreen} />
+              <Stack.Screen 
+  name="Profile" 
+  component={ProfileScreen} 
+  options={{ title: 'Your Profile' }}
+/>
             </>
           )}
         </Stack.Navigator>

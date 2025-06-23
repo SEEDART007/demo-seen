@@ -18,6 +18,7 @@ import {
   BookOpen,
   Shield,
   ClipboardList,
+  User,
   Mic,
   MapPin,
   SquareActivity,
@@ -273,6 +274,13 @@ const HomeScreen = ({ navigation }) => {
           style={styles.header}
           onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)}
         >
+           <TouchableOpacity 
+            style={styles.profileButton}
+            onPress={() => navigation.navigate('Profile')}
+            activeOpacity={0.7}
+          >
+            <User color={isDarkMode ? "#fff" : "#5D3FD3"} size={24} />
+          </TouchableOpacity>
           {/* Stars */}
           {isDarkMode && starAnimations.current.map((star, index) => (
             <Animated.View
@@ -459,6 +467,15 @@ const getStyles = (isDarkMode) => StyleSheet.create({
     marginTop: 4,
     fontStyle: 'italic',
     zIndex: 10,
+  },
+    profileButton: {
+    position: 'absolute',
+    top: 22,
+    left: 22,
+    padding: 10,
+    borderRadius: 30,
+    backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.25)',
+    zIndex: 30,
   },
   quickExit: {
     backgroundColor: '#ef4444',
