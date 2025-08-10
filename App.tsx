@@ -7,7 +7,8 @@ import { View, ActivityIndicator } from 'react-native';
 // Screens
 import PhoneSignin from './screens/PhoneSignin';
 import HomeScreen from './screens/HomeScreen';
-import EmergencyScreen from './screens/EmergencyScreen';
+import DangerZoneScreen from './screens/DangerZoneScreen';
+
 import ResourcesScreen from './screens/ResourcesScreen';
 import SafetyPlanScreen from './screens/SafetyPlanScreen';
 import ExitScreen from './screens/ExitScreen';
@@ -61,7 +62,7 @@ export default function App() {
           ) : (
             <>
               <Stack.Screen name="Home" component={HomeScreen} />
-              <Stack.Screen name="Emergency" component={EmergencyScreen} />
+         
               <Stack.Screen name="Resources" component={ResourcesScreen} />
               <Stack.Screen name="SafetyPlan" component={SafetyPlanScreen} />
               <Stack.Screen name="LogIncident" component={LogIncidentScreen} />
@@ -72,6 +73,7 @@ export default function App() {
               <Stack.Screen name="Result" component={QuizResults} />
               <Stack.Screen name="MentalHealth" component={MentalHealthScreen} />
               <Stack.Screen name="News" component={Articles} />
+              <Stack.Screen name="DangerZone" component={DangerZoneScreen} />
               <Stack.Screen name="CommunityScreen" component={CommunityScreen} />
               <Stack.Screen name="GroupChatScreen" component={GroupChatScreen} />
               <Stack.Screen name="LegalAdvisor" component={LegalAdvisor} />

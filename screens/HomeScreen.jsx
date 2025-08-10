@@ -25,6 +25,7 @@ import {
   DoorOpen,
   LogOut,
   Sun,
+  AlertTriangle ,
   Moon,
   Users,
   Gavel,
@@ -252,6 +253,8 @@ const HomeScreen = ({ navigation }) => {
     { icon: <Sun color="#fff" size={28} />, title: 'Mental Health', screen: 'MentalHealth', color: '#14b8a6' },
     { icon: <Users color="#fff" size={28} />, title: 'Community Chat', screen: 'CommunityScreen', color: '#6366f1' },
     { icon: <BookOpen color="#fff" size={28} />, title: 'Imp Websites', screen: 'Websites', color: '#0ea5e9' },
+    { icon: <AlertTriangle color="#fff" size={28} />, title: 'Danger Zone Alert', screen: 'DangerZone', color: '#dc2626' },
+
  
 {
   icon: <ScaleIcon color="#fff" size={28} />,
