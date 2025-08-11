@@ -45,6 +45,9 @@ export const getDangerZones = () => DANGER_ZONES;
  * @returns {Object|null} Danger zone object or null if not found
  */
 export const getDangerZoneById = (id) => {
+  if (typeof id !== 'number' && typeof id !== 'string') {
+    return null;
+  }
   return DANGER_ZONES.find(zone => zone.id === id) || null;
 };
 
@@ -54,6 +57,13 @@ export const getDangerZoneById = (id) => {
  * @returns {Array} Array of matching danger zones
  */
 export const getDangerZonesByType = (type) => {
+  if (typeof type !== 'string' || !type.trim()) {
+    return [];
+  }
+  const validTypes = ['restricted', 'crime', 'construction', 'emergency'];
+  if (!validTypes.includes(type)) {
+    return [];
+  }
   return DANGER_ZONES.filter(zone => zone.type === type);
 };
 
@@ -63,5 +73,12 @@ export const getDangerZonesByType = (type) => {
  * @returns {Array} Array of matching danger zones
  */
 export const getDangerZonesBySeverity = (severity) => {
+  if (typeof severity !== 'string' || !severity.trim()) {
+    return [];
+  }
+  const validSeverities = ['low', 'medium', 'high'];
+  if (!validSeverities.includes(severity)) {
+    return [];
+  }
   return DANGER_ZONES.filter(zone => zone.severity === severity);
 };
