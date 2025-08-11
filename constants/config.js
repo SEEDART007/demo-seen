@@ -5,7 +5,7 @@
 
 // API Configuration
 export const API_KEYS = {
-  DEEPGRAM: '439e9d68b1482b32378dd2f10c957276d906430f',
+  DEEPGRAM: process.env.DEEPGRAM_API_KEY || null,
 };
 
 export const API_ENDPOINTS = {
