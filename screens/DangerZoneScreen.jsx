@@ -11,23 +11,25 @@ import {
   StatusBar,
 } from 'react-native';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
-import Geolocation from '@react-native-community/geolocation';
 import RNFS from 'react-native-fs';
-import { getDistance } from 'geolib';
 import PushNotification from 'react-native-push-notification';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { Buffer } from 'buffer';
 
-const audioRecorderPlayer = new AudioRecorderPlayer();
-const DEEPGRAM_API_KEY = '439e9d68b1482b32378dd2f10c957276d906430f';
+// Refactored imports - moved hardcoded data to separate files
+import { checkDangerZone, formatCoordinates } from '../utils/locationUtils';
+import EmergencyService from '../services/emergencyService';
+import {
+  API_KEYS,
+  API_ENDPOINTS,
+  AUDIO_CONFIG,
+  NOTIFICATION_CONFIG,
+  DEFAULTS,
+  STORAGE_KEYS,
+} from '../constants/config';
 
-// Danger zones configuration
-const dangerZones = [
-  { id: 1, latitude: 37.7749, longitude: -122.4194, radius: 200, name: "Restricted Area 1" },
-  { id: 2, latitude: 37.7800, longitude: -122.4200, radius: 150, name: "High Crime Area" },
-  { id: 3, latitude: 37.421998, longitude: -122.084000, radius: 150, name: "High Crime Area" },
-];
+const audioRecorderPlayer = new AudioRecorderPlayer();
 
 const HelpDetectionScreen = () => {
   const [isRecording, setIsRecording] = useState(false);
@@ -45,63 +47,61 @@ const HelpDetectionScreen = () => {
     requestPermissions();
     setupNotifications();
     
-    const loadContacts = async () => {
+    const loadStoredData = async () => {
       try {
-        const savedContacts = await AsyncStorage.getItem('@emergency_contacts');
-        if (savedContacts !== null) {
-          setContacts(JSON.parse(savedContacts));
+        const [savedContacts, savedTriggerWord] = await Promise.all([
+          AsyncStorage.getItem(STORAGE_KEYS.EMERGENCY_CONTACTS),
+          AsyncStorage.getItem(STORAGE_KEYS.TRIGGER_WORD)
+        ]);
+        
+        if (savedContacts) {
+          try {
+            const parsedContacts = JSON.parse(savedContacts);
+            if (Array.isArray(parsedContacts)) {
+              const validContacts = parsedContacts.filter(contact => 
+                typeof contact === 'string' && contact.trim().length > 0
+              );
+              setContacts(validContacts);
+            }
+          } catch (parseError) {
+            setContacts([]);
+          }
         }
-      } catch (e) {
-        console.error('Failed to load contacts', e);
+        
+        if (savedTriggerWord && typeof savedTriggerWord === 'string' && savedTriggerWord.trim()) {
+          const sanitizedTriggerWord = savedTriggerWord.replace(/[<>"'&]/g, '').trim();
+          setTriggerWord(sanitizedTriggerWord || DEFAULTS.TRIGGER_WORD);
+        } else {
+          setTriggerWord(DEFAULTS.TRIGGER_WORD);
+        }
+      } catch (error) {
+        setContacts([]);
+        setTriggerWord(DEFAULTS.TRIGGER_WORD);
       }
     };
     
-    loadContacts();
+    loadStoredData();
 
-    const loadTriggerWord = async () => {
-      try {
-        const word = await AsyncStorage.getItem('@trigger_word');
-        if (word) setTriggerWord(word);
-      } catch (e) {
-        console.error('Failed to load trigger word', e);
-      }
-    };
-    
-    loadTriggerWord();
-
-    const watchId = Geolocation.watchPosition(
+    // Refactored: use EmergencyService for location watching
+    const watchId = EmergencyService.watchPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
         setCurrentLocation({ latitude, longitude });
         
+        // Refactored: use utility function for danger zone checking
         const zone = checkDangerZone(latitude, longitude);
 
         if (zone && (!currentZone || zone.id !== currentZone.id) && !manualOverride) {
-          // Entered new danger zone
-          setCurrentZone(zone);
-          startRecording();
-          PushNotification.localNotification({
-            channelId: "danger-zone-alerts",
-            title: "🚨 Entered Danger Zone",
-            message: `Auto-recording enabled in ${zone.name}`,
-          });
+          handleZoneEntry(zone);
         } else if (!zone && currentZone && !manualOverride) {
-          // Left danger zone
-          setCurrentZone(null);
-          stopRecording();
-          PushNotification.localNotification({
-            channelId: "danger-zone-alerts",
-            title: "✅ Safe Zone",
-            message: "Left danger zone. Recording stopped.",
-          });
+          handleZoneExit();
         }
       },
-      (error) => console.log("Location error:", error),
-      { enableHighAccuracy: true, distanceFilter: 10 }
+      (error) => console.error("Location error:", error)
     );
 
     return () => {
-      Geolocation.clearWatch(watchId);
+      EmergencyService.clearWatch(watchId);
       if (isRecording) stopRecording();
     };
   }, [currentZone, manualOverride]);
@@ -127,27 +127,38 @@ const HelpDetectionScreen = () => {
     }
   };
 
+  // Refactored: use constants for notification setup
   const setupNotifications = () => {
     PushNotification.createChannel(
       {
-        channelId: "danger-zone-alerts",
-        channelName: "Danger Zone Alerts",
-        importance: 4,
-        vibrate: true,
+        channelId: NOTIFICATION_CONFIG.CHANNEL_ID,
+        channelName: NOTIFICATION_CONFIG.CHANNEL_NAME,
+        importance: NOTIFICATION_CONFIG.IMPORTANCE,
+        vibrate: NOTIFICATION_CONFIG.VIBRATE,
       },
-      (created) => console.log(`Channel created: ${created}`)
+      (created) => {}
     );
   };
 
-  const checkDangerZone = (userLat, userLng) => {
-    for (let zone of dangerZones) {
-      const distance = getDistance(
-        { latitude: userLat, longitude: userLng },
-        { latitude: zone.latitude, longitude: zone.longitude }
-      );
-      if (distance <= zone.radius) return zone;
-    }
-    return null;
+  // Refactored: extracted zone entry/exit handlers for better organization
+  const handleZoneEntry = (zone) => {
+    setCurrentZone(zone);
+    startRecording();
+    PushNotification.localNotification({
+      channelId: NOTIFICATION_CONFIG.CHANNEL_ID,
+      title: "Entered Danger Zone",
+      message: `Auto-recording enabled in ${zone.name}`,
+    });
+  };
+
+  const handleZoneExit = () => {
+    setCurrentZone(null);
+    stopRecording();
+    PushNotification.localNotification({
+      channelId: NOTIFICATION_CONFIG.CHANNEL_ID,
+      title: "Safe Zone",
+      message: "Left danger zone. Recording stopped.",
+    });
   };
 
   const startRecording = async () => {
@@ -162,8 +173,16 @@ const HelpDetectionScreen = () => {
     }
   };
 
+  // Refactored: use constants for audio configuration
   const startRecordingLoop = async () => {
-    const filePath = `${RNFS.DocumentDirectoryPath}/help-detect.m4a`;
+    if (!API_KEYS.DEEPGRAM) {
+      Alert.alert('Configuration Error', 'API key not configured.');
+      setIsRecording(false);
+      setHasStarted(false);
+      return;
+    }
+    
+    const filePath = `${RNFS.DocumentDirectoryPath}/help-detect.${AUDIO_CONFIG.FILE_FORMAT}`;
     
     while (!stopFlag.current) {
       try {
@@ -173,7 +192,7 @@ const HelpDetectionScreen = () => {
         await audioRecorderPlayer.startRecorder(filePath);
         setIsRecording(true);
 
-        await new Promise((res) => setTimeout(res, 5000));
+        await new Promise((res) => setTimeout(res, AUDIO_CONFIG.RECORDING_DURATION));
 
         await audioRecorderPlayer.stopRecorder();
         setIsRecording(false);
@@ -182,32 +201,27 @@ const HelpDetectionScreen = () => {
         const audioBuffer = Buffer.from(audioData, 'base64');
 
         const response = await axios.post(
-          'https://api.deepgram.com/v1/listen',
+          API_ENDPOINTS.DEEPGRAM,
           audioBuffer,
           {
             headers: {
-              'Content-Type': 'audio/m4a',
-              Authorization: `Token ${DEEPGRAM_API_KEY}`,
+              'Content-Type': AUDIO_CONFIG.CONTENT_TYPE,
+              Authorization: `Token ${API_KEYS.DEEPGRAM}`,
             },
+            timeout: 10000,
           }
         );
 
         const transcript = response.data?.results?.channels?.[0]?.alternatives?.[0]?.transcript;
-        console.log('Transcript:', transcript);
-
-        if (
-          transcript &&
-          triggerWord &&
-          transcript.toLowerCase().includes(triggerWord.toLowerCase())
-        ) {
-          Alert.alert('🆘 Trigger Detected!', `Detected the word "${triggerWord}" in speech.`);
+        
+        if (transcript && triggerWord && transcript.toLowerCase().includes(triggerWord.toLowerCase())) {
+          Alert.alert('Trigger Detected', 'Emergency trigger word detected.');
           stopFlag.current = true;
           setHasStarted(false);
-          sendEmergencySMS();
+          handleTriggerDetected();
           break;
         }
       } catch (err) {
-        console.error('Recording loop error:', err);
         setIsRecording(false);
         setHasStarted(false);
         break;
@@ -228,6 +242,7 @@ const HelpDetectionScreen = () => {
     }
   };
 
+  // Refactored: use EmergencyService for sending SMS
   const sendEmergencySMS = async () => {
     if (contacts.length === 0) {
       Alert.alert('⚠️ No Contacts', 'Please add at least one contact.');
@@ -235,37 +250,23 @@ const HelpDetectionScreen = () => {
     }
 
     try {
-      console.log('📡 Getting location...');
-      Geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
-          const message = `🆘 Emergency! Trigger word "${triggerWord}" detected.\nLocation: ${mapsUrl}`;
-
-          console.log('📡 Sending POST request to server...');
-          const response = await axios.post('https://riseup-sms-6262.twil.io/welcome', {
-            to: contacts,
-            message: message,
-          });
-
-          console.log('✅ Server response:', response.data);
-
-          if (response.data.success) {
-            Alert.alert('📩 SMS Sent', 'Emergency SMS with location has been sent.');
-          } else {
-            Alert.alert('❌ Failed', 'Server could not send SMS.');
-          }
-        },
-        (error) => {
-          console.error('Location error:', error.message);
-          Alert.alert('❌ Location Error', 'Could not get GPS location.');
-        },
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-      );
+      const message = `🆘 Emergency! Trigger word "${triggerWord}" detected.`;
+      await EmergencyService.sendEmergencySMS(contacts, message);
+      Alert.alert('📩 SMS Sent', 'Emergency SMS with location has been sent.');
     } catch (error) {
       console.error('❌ Error sending SMS:', error.message);
-      Alert.alert('❌ Error', 'Failed to contact SMS server.');
+      Alert.alert('❌ Error', 'Failed to send emergency SMS.');
     }
+  };
+
+  // Handler for when trigger word is detected
+  const handleTriggerDetected = () => {
+    sendEmergencySMS();
+    PushNotification.localNotification({
+      channelId: NOTIFICATION_CONFIG.CHANNEL_ID,
+      title: "Emergency Triggered!",
+      message: `Trigger word "${triggerWord}" detected. Emergency SMS sent.`,
+    });
   };
 
   const handleManualStop = () => {
